@@ -42,7 +42,7 @@ module.exports.loop = function () {
             roleWallRepairer.run(creep);
         }
     }
-
+    /*
     var towers = Game.rooms.W24S23.find(FIND_STRUCTURES, {
         filter: (s) => s.structureType == STRUCTURE_TOWER
     });
@@ -52,7 +52,7 @@ module.exports.loop = function () {
             tower.attack(target);
         }
     }
-
+    */
     // setup some minimum numbers for different roles
     var minimumNumberOfHarvesters = 2;
     var minimumNumberOfUpgraders = 1;

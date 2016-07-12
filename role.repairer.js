@@ -16,9 +16,7 @@ module.exports = {
 
         // if creep is supposed to repair something
         if (creep.memory.working == true) {
-            // find closest structure with less than max hits
-            // Exclude walls because they have way too many max hits and would keep
-            // our repairers busy forever. We have to find a solution for that later.
+            // find closest structure with less than max hits, exclude walls            
             var structure = creep.pos.findClosestByPath(FIND_STRUCTURES, {
                 // the second argument for findClosestByPath is an object which takes
                 // a property called filter which can be a function
@@ -31,7 +29,7 @@ module.exports = {
                 // try to repair it, if it is out of range
                 if (creep.repair(structure) == ERR_NOT_IN_RANGE) {
                     // move towards it
-                    creep.moveTo(structure);
+                    creep.moveTo(structure, {reusePath: 30});
                 }
             }
             // if we can't fine one
@@ -47,7 +45,7 @@ module.exports = {
             // try to harvest energy, if the source is not in range
             if (creep.harvest(source) == ERR_NOT_IN_RANGE) {
                 // move towards the source
-                creep.moveTo(source);
+                creep.moveTo(source, {reusePath: 30});
             }
         }
     }

@@ -8,7 +8,7 @@ module.exports = {
             // switch state
             creep.memory.working = false;
         }
-        // if creep is harvesting energy but is full
+        // if creep is full of energy but not working
         else if (creep.memory.working == false && creep.carry.energy == creep.carryCapacity) {
             // switch state
             creep.memory.working = true;
@@ -16,42 +16,55 @@ module.exports = {
 
         // if creep is supposed to repair something
         if (creep.memory.working == true) {
-            // find all walls in the room
-            var walls = creep.room.find(FIND_STRUCTURES, {
-                filter: (s) => s.structureType == STRUCTURE_WALL
-            });
+			
+			if (creep.memory.wallTarget == undefined) {
+				// find all walls in the room
+				var walls = creep.room.find(FIND_STRUCTURES, { filter: (s) => s.structureType == STRUCTURE_WALL });
+				var target = undefined;
 
-            var target = undefined;
+				// loop with increasing percentages
+				for (var percentage = 0.01; percentage <= 1; percentage = percentage + 0.01){
+					// find a wall with less than percentage hits
 
-            // loop with increasing percentages
-            for (let percentage = 0.0001; percentage <= 1; percentage = percentage + 0.0001){
-                // find a wall with less than percentage hits
+					// for some reason this doesn't work
+					// target = creep.pos.findClosestByPath(walls, {
+					//     filter: (s) => s.hits / s.hitsMax < percentage
+					// });
 
-                // for some reason this doesn't work
-                // target = creep.pos.findClosestByPath(walls, {
-                //     filter: (s) => s.hits / s.hitsMax < percentage
-                // });
+					// so we have to use this
+					target = creep.pos.findClosestByPath(FIND_STRUCTURES, {
+						filter: (s) => s.structureType == STRUCTURE_WALL &&
+									   s.hits / s.hitsMax < percentage
+					});
 
-                // so we have to use this
-                target = creep.pos.findClosestByPath(FIND_STRUCTURES, {
-                    filter: (s) => s.structureType == STRUCTURE_WALL &&
-                                   s.hits / s.hitsMax < percentage
-                });
-
-                // if there is one
-                if (target != undefined) {
-                    // break the loop
-                    break;
-                }
-            }
+					// if there is one
+					if (target != undefined) {
+						creep.memory.targetPercentage=percentage;
+						creep.memory.wallTarget=target;
+						// break the loop
+						break;
+					}
+				}
+			}
+			else {
+				var percentage=creep.memory.targetPercentage;
+				var target=creep.memory.wallTarget;
+			}				
 
             // if we find a wall that has to be repaired
             if (target != undefined) {
                 // try to repair it, if not in range
                 if (creep.repair(target) == ERR_NOT_IN_RANGE) {
                     // move towards it
-                    creep.moveTo(target);
+                    creep.moveTo(target, {reusePath: 30});
                 }
+				else {
+					//repair successful, more repair needed?
+					if (target.hits / target.hitsMax > percentage) {
+						//no further repair at the moment
+						creep.memory.wallTarget = undefined;
+					}
+				}
             }
             // if we can't fine one
             else {
@@ -68,7 +81,7 @@ module.exports = {
             // try to harvest energy, if the source is not in range
             if (creep.harvest(source) == ERR_NOT_IN_RANGE) {
                 // move towards the source
-                creep.moveTo(source);
+                creep.moveTo(source, {reusePath: 30});
             }
         }
     }

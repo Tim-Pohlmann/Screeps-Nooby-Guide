@@ -5,6 +5,7 @@ var roleUpgrader = require('role.upgrader');
 var roleBuilder = require('role.builder');
 var roleRepairer = require('role.repairer');
 var roleWallRepairer = require('role.wallRepairer');
+var roleCollector = require('role.collector');
 
 module.exports.loop = function () {
     
@@ -14,6 +15,7 @@ module.exports.loop = function () {
         if (Game.creeps[name] == undefined) {
             // if not, delete the memory entry
             delete Memory.creeps[name];
+            console.log("One creep expired.");
         }
     }
 	
@@ -45,22 +47,18 @@ module.exports.loop = function () {
         }
         // if creep is wallRepairer, call wallRepairer script
         else if (creep.memory.role == 'wallRepairer') {
-            //roleWallRepairer.run(creep);
+            roleWallRepairer.run(creep);
 			//console.log("Post WallRepairer: " + Game.cpu.getUsed());
         }
     }
     
     // setup some minimum numbers for different roles
-    var minimumNumberOfHarvesters = 2;
+    var minimumNumberOfHarvesters = 3;
     var minimumNumberOfUpgraders = 3;
     var minimumNumberOfBuilders = 1;
-    var minimumNumberOfRepairers = 1;
-    var minimumNumberOfWallRepairers = 1;
-<<<<<<< HEAD
+    var minimumNumberOfRepairers = 3;
+    var minimumNumberOfWallRepairers = 2;
 	var maxNumberOfCreeps = 50;
-=======
-	var maxNumberOfCreeps = 25;
->>>>>>> origin/master
 	
     // count the number of creeps alive for each role
     // _.sum will count the number of properties in Game.creeps filtered by the
@@ -75,29 +73,21 @@ module.exports.loop = function () {
     var name = undefined;
 	
 	var totalCreeps = numberOfBuilders + numberOfHarvesters + numberOfRepairers + numberOfUpgraders + numberOfWallRepairers;
-		
+	
 	if (maxNumberOfCreeps > totalCreeps) {		
 			// if not enough harvesters
 		if (numberOfHarvesters < minimumNumberOfHarvesters) {
 			// try to spawn one
-<<<<<<< HEAD
 			var rolename='harvester';			
-=======
-			var rolename='harvester';
 
->>>>>>> origin/master
 			// if spawning failed and we have no harvesters left
-			if (name == ERR_NOT_ENOUGH_ENERGY && numberOfHarvesters == 0) {
+			if (numberOfHarvesters == 0) {
 				// spawn one with what is available
 				var rolename='miniharvester';
 			}
 		}
-		// if not enough upgraders
-<<<<<<< HEAD
+		// if not enough upgrader
 		else if (numberOfUpgraders < minimumNumberOfUpgraders) { var rolename='upgrader';}
-=======
-		else if (numberOfUpgraders < minimumNumberOfUpgraders) { var rolename='harvester';}
->>>>>>> origin/master
 		// if not enough repairers
 		else if (numberOfRepairers < minimumNumberOfRepairers) { var rolename='repairer';}
 		// if not enough builders
@@ -115,5 +105,19 @@ module.exports.loop = function () {
 	}
 	else {
 		//console.log("Max Creeps Reached: " + totalCreeps);
-	}	
+	}
+
+    // Cycle through rooms    
+    for (let r in Game.rooms) {
+        // tower code
+        var hostiles = Game.rooms[r].find(FIND_HOSTILE_CREEPS);
+        
+        if(hostiles.length > 0) {
+            var username = hostiles[0].owner.username;
+            Game.notify(`Hostile creep ${username} spotted!`);
+
+            var towers = Game.find(FIND_MY_STRUCTURES, {filter: {structureType: STRUCTURE_TOWER}});
+            towers.forEach(tower => tower.attack(hostiles[0]));
+        }
+    }
 };

@@ -56,7 +56,11 @@ module.exports.loop = function () {
     var minimumNumberOfBuilders = 1;
     var minimumNumberOfRepairers = 1;
     var minimumNumberOfWallRepairers = 1;
+<<<<<<< HEAD
+	var maxNumberOfCreeps = 50;
+=======
 	var maxNumberOfCreeps = 25;
+>>>>>>> origin/master
 	
     // count the number of creeps alive for each role
     // _.sum will count the number of properties in Game.creeps filtered by the
@@ -76,8 +80,12 @@ module.exports.loop = function () {
 			// if not enough harvesters
 		if (numberOfHarvesters < minimumNumberOfHarvesters) {
 			// try to spawn one
+<<<<<<< HEAD
+			var rolename='harvester';			
+=======
 			var rolename='harvester';
 
+>>>>>>> origin/master
 			// if spawning failed and we have no harvesters left
 			if (name == ERR_NOT_ENOUGH_ENERGY && numberOfHarvesters == 0) {
 				// spawn one with what is available
@@ -85,7 +93,11 @@ module.exports.loop = function () {
 			}
 		}
 		// if not enough upgraders
+<<<<<<< HEAD
+		else if (numberOfUpgraders < minimumNumberOfUpgraders) { var rolename='upgrader';}
+=======
 		else if (numberOfUpgraders < minimumNumberOfUpgraders) { var rolename='harvester';}
+>>>>>>> origin/master
 		// if not enough repairers
 		else if (numberOfRepairers < minimumNumberOfRepairers) { var rolename='repairer';}
 		// if not enough builders

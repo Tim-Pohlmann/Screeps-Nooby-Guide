@@ -56,7 +56,7 @@ module.exports.loop = function () {
     var minimumNumberOfHarvesters = 3;
     var minimumNumberOfUpgraders = 3;
     var minimumNumberOfBuilders = 1;
-    var minimumNumberOfRepairers = 3;
+    var minimumNumberOfRepairers = 2;
     var minimumNumberOfWallRepairers = 2;
 	var maxNumberOfCreeps = 50;
 	
@@ -108,16 +108,48 @@ module.exports.loop = function () {
 	}
 
     // Cycle through rooms    
-    for (let r in Game.rooms) {
-        // tower code
-        var hostiles = Game.rooms[r].find(FIND_HOSTILE_CREEPS);
+    for (let r in Game.rooms) {      
+        var towers = Game.rooms[r].find(FIND_MY_STRUCTURES, {filter: {structureType: STRUCTURE_TOWER}});
         
-        if(hostiles.length > 0) {
-            var username = hostiles[0].owner.username;
-            Game.notify(`Hostile creep ${username} spotted!`);
+        if (towers.length > 0) {
 
-            var towers = Game.find(FIND_MY_STRUCTURES, {filter: {structureType: STRUCTURE_TOWER}});
-            towers.forEach(tower => tower.attack(hostiles[0]));
+            // tower attack code
+            var hostiles = Game.rooms[r].find(FIND_HOSTILE_CREEPS);  
+
+            if(hostiles.length > 0) {
+                var username = hostiles[0].owner.username;
+                Game.notify(`Hostile creep ${username} spotted!`);       
+                     
+                towers.forEach(tower => tower.attack(hostiles[0]));
+            }
+
+            //healing code
+
+            for (tower in towers) {
+                //console.log(towers[tower].id);
+                //healing code
+                var wounded = Game.rooms[r].find(FIND_MY_CREEPS, { 
+                    filter: function(object) 
+                    {
+                        return (object.hits < object.hitsMax) && (object.name != creep.name);
+                    }
+                }); 
+
+                if (wounded.length >0) {
+                    towers[tower].heal(wounded[0]);
+                }
+                
+                //repairing code                
+                if (towers[tower].energy / towers[tower].energyCapacity > 0.8) {
+                    var damage = Game.rooms[r].find(FIND_MY_STRUCTURES,{
+                        filter: (s) => s.hits < s.hitsMax && s.structureType != STRUCTURE_WALL
+                    });
+                    
+                    if (damage.length > 0) {
+                        towers[tower].repair(damage[0]);
+                    }
+                }
+            }
         }
     }
 };

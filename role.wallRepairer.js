@@ -1,4 +1,5 @@
 var roleBuilder = require('role.builder');
+var roleCollector = require('role.collector');
 
 module.exports = {
     // a function to run the logic for this role
@@ -55,16 +56,7 @@ module.exports = {
         }
         // if creep is supposed to harvest energy from source
         else {
-            // find closest source
-            var source = creep.pos.findClosestByPath(FIND_SOURCES, {
-                filter: (s) => s.energy > 0
-            });
-            // try to harvest energy, if the source is not in range
-            if (creep.harvest(source) == ERR_NOT_IN_RANGE) {
-                // move towards the source
-                creep.moveTo(source, {reusePath: 5});
-
-            }
+            roleCollector.run(creep);            
         }
     }
 };

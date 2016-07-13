@@ -33,13 +33,28 @@ module.exports = function() {
 				break;
 				
 				case "repairer":
+					body.push(WORK); //100
+					body.push(CARRY); //50
+					body.push(MOVE);  //50
+					body.push(MOVE);  //50
+					size=250;
+				break;
+
 				case "builder":
+				body.push(WORK); //100
+					body.push(CARRY); //50
+					body.push(CARRY);  //50
+					body.push(MOVE);  //50
+					size=250;
+				break;
+
 				case "wallRepairer":
 					body.push(WORK); //100
 					body.push(CARRY); //50
 					body.push(CARRY);  //50
 					body.push(MOVE);  //50
-					size=250;
+					body.push(MOVE);  //50
+					size=300;
 				break;
 						
 				default:

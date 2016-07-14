@@ -7,11 +7,12 @@ var roleRepairer = require('role.repairer');
 var roleWallRepairer = require('role.wallRepairer');
 var roleCollector = require('role.collector');
 var roleJobber = require('role.jobber');
+var roleRemoteHarvester = require('role.remoteHarvester');
 
 module.exports.loop = function () {
     
 	// check for memory entries of died creeps by iterating over Memory.creeps
-    for (let name in Memory.creeps) {
+    for (var name in Memory.creeps) {
         // and checking if the creep is still alive
         if (Game.creeps[name] == undefined) {
             // if not, delete the memory entry
@@ -19,13 +20,14 @@ module.exports.loop = function () {
             console.log("One creep expired.");
         }
     }
-	
+
     // Cycle through rooms    
-    for (let r in Game.rooms) {
+    for (var r in Game.rooms) {
+        //console.log(Game.map.describeExits(Game.rooms[r].name));
 
         // Tower code      
         var towers = Game.rooms[r].find(FIND_MY_STRUCTURES, {filter: {structureType: STRUCTURE_TOWER}});
-        
+
         if (towers.length > 0) {
 
             // Tower attack code
@@ -33,7 +35,7 @@ module.exports.loop = function () {
 
             if(hostiles.length > 0) {
                 var username = hostiles[0].owner.username;
-                Game.notify(`Hostile creep ${username} spotted!`);       
+                Game.notify("Hostile creep " + username + " spotted!");
                      
                 towers.forEach(tower => tower.attack(hostiles[0]));
             }
@@ -79,8 +81,8 @@ module.exports.loop = function () {
                 // Creep found to pick up dropped energy
                 collector.memory.jobQueueObject = energyID;
                 collector.memory.jobQueueTask = "pickUpEnergy";
-                console.log(energyID + ": " + energyAmount + " " + energies[energy].resourceType + " (" + Game.rooms[r] + ": " + energies[energy].pos.x + "/" + energies[energy].pos.y);
-                console.log(collector.name);
+                //console.log(energyID + ": " + energyAmount + " " + energies[energy].resourceType + " (" + Game.rooms[r] + ": " + energies[energy].pos.x + "/" + energies[energy].pos.y);
+                //console.log(collector.name);
                 roleJobber.run(collector, "droppedEnergy")
             }
         }
@@ -98,8 +100,6 @@ module.exports.loop = function () {
 
         if (creep.memory.jobQueueTask != undefined) { // Creep has job pending
             //Job queue pending
-            creep.say("Job!");
-
             switch (creep.memory.jobQueueTask) {
                 case "pickUpEnergy": //Dropped energy to be picked up
                     roleJobber.run(creep,"droppedEnergy");
@@ -139,13 +139,17 @@ module.exports.loop = function () {
     
     // setup some minimum numbers for different roles
     var minimumNumberOfHarvesters = 3;
-    var minimumNumberOfUpgraders = 3;
-    var minimumNumberOfBuilders = 2;
-    var minimumNumberOfRepairers = 2;
+    var minimumNumberOfRemoteHarvesters = 0;
+    var minimumNumberOfUpgraders = 2;
+    var minimumNumberOfBuilders = 1;
+    var minimumNumberOfRepairers = 1;
     var minimumNumberOfWallRepairers = 1;
-	var maxNumberOfCreeps = 50;
+	var maxNumberOfCreeps = 30;
+
+    //console.log(Game.flags.targetRoom.id);
 	
     var numberOfHarvesters = _.sum(Game.creeps, (c) => c.memory.role == 'harvester');
+    var numberOfRemoteHarvesters = _.sum(Game.creeps, (c) => c.memory.role == 'remoteHarvester');
     var numberOfUpgraders = _.sum(Game.creeps, (c) => c.memory.role == 'upgrader');
     var numberOfBuilders = _.sum(Game.creeps, (c) => c.memory.role == 'builder');
     var numberOfRepairers = _.sum(Game.creeps, (c) => c.memory.role == 'repairer');
@@ -176,6 +180,8 @@ module.exports.loop = function () {
 		else if (numberOfBuilders < minimumNumberOfBuilders) { var rolename='builder';}
 		// if not enough wallRepairers
 		else if (numberOfWallRepairers < minimumNumberOfWallRepairers) { var rolename='wallRepairer';}
+		// if not enough remoteHarvesters
+        else if (numberOfWallRepairers < minimumNumberOfRemoteHarvesters) { var rolename='remoteHarvester';}
 		else { var rolename='builder';}
 		
 		name = Game.spawns.Spawn1.createCustomCreep(energy, rolename);

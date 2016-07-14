@@ -4,27 +4,17 @@ module.exports = {
     	// Collect energy from different sources
     	var returncode;
 
-    	if (target == "source") {
-    		var source = creep.pos.findClosestByPath(FIND_SOURCES,{filter: (s) => s.energy > 0});
-    		returncode = creep.harvest(source);
-    	}
-    	else {
-    		// Identify target by ID
-    		if (creep.pickup(target) == ERR_NOT_IN_RANGE) {
-    			if(!creep.memory.path) {
-    				creep.memory.path = creep.pos.findPathTo(target);				
-    			}
-    			creep.moveByPath(creep.memory.path);
-    		}    		
-    	}
     	switch (target) {
     		case "source":
-    			
+				var source = creep.pos.findClosestByPath(FIND_SOURCES,{filter: (s) => s.energy > 0});
+				returncode = creep.harvest(source);
     		break;
 
-    		case "droppedEnergy";
-    			var sourcepath = creep.pos.findClosestByPath(FIND_DROPPED_ENERGY);
+			case "droppedEnergy":
+    			var source = creep.pos.findClosestByPath(FIND_DROPPED_ENERGY);
     			returncode = creep.pickup(source);
+
+				creep.jobQueueTask = undefined;
     		break;
     	}
 

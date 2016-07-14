@@ -6,6 +6,7 @@ var roleBuilder = require('role.builder');
 var roleRepairer = require('role.repairer');
 var roleWallRepairer = require('role.wallRepairer');
 var roleCollector = require('role.collector');
+var roleJobber = require('role.jobber');
 
 module.exports.loop = function () {
     
@@ -52,11 +53,10 @@ module.exports.loop = function () {
                     towers[tower].heal(wounded[0]);
                 }
                 
-                //Repairing code                
+                //Repairing code
                 if (towers[tower].energy / towers[tower].energyCapacity > 0.8) {
                     var damage = Game.rooms[r].find(FIND_MY_STRUCTURES,{
-                        filter: (s) => s.hits < s.hitsMax && s.structureType != STRUCTURE_WALL
-                    });
+                        filter: (s) => s.hits < s.hitsMax && s.structureType != STRUCTURE_WALL && s.structureType != STRUCTURE_RAMPART });
                     
                     if (damage.length > 0) {
                         towers[tower].repair(damage[0]);
@@ -73,17 +73,16 @@ module.exports.loop = function () {
             var energyAmount = energies[energy].amount;
 
             var collector = energies[energy].pos.findClosestByPath(FIND_MY_CREEPS, { 
-                filter: (s) => (s.carryCapacity - _.sum(s.carry) - energyAmount) > 0
-            });
+                filter: (s) => (s.carryCapacity - _.sum(s.carry) - energyAmount) > 0 });
             
             if (collector != null) {
+                // Creep found to pick up dropped energy
                 collector.memory.jobQueueObject = energyID;
                 collector.memory.jobQueueTask = "pickUpEnergy";
                 console.log(energyID + ": " + energyAmount + " " + energies[energy].resourceType + " (" + Game.rooms[r] + ": " + energies[energy].pos.x + "/" + energies[energy].pos.y);
                 console.log(collector.name);
+                roleJobber.run(collector, "droppedEnergy")
             }
-
-            
         }
     }
 
@@ -93,18 +92,21 @@ module.exports.loop = function () {
     for (let name in Game.creeps) {
         // get the creep object
         var creep = Game.creeps[name];
+        /*if (creep.memory.jobQueueTask != undefined) {
+            creep.memory.jobQueueTask = undefined;
+        }*/
 
-        if (creep.memory.jobQueueTask == "test") { // code not to be run yet
+        if (creep.memory.jobQueueTask != undefined) { // Creep has job pending
             //Job queue pending
             creep.say("Job!");
 
             switch (creep.memory.jobQueueTask) {
                 case "pickUpEnergy": //Dropped energy to be picked up
-                    //roleCollector.run(creep,"droppedEnergy");                                       
+                    roleJobber.run(creep,"droppedEnergy");
                 break;
             }
 
-            delete creep.memory.jobQueueTask;
+            creep.memory.jobQueueTask = undefined;
         }
         else {
             // if creep is harvester, call harvester script
@@ -138,14 +140,11 @@ module.exports.loop = function () {
     // setup some minimum numbers for different roles
     var minimumNumberOfHarvesters = 3;
     var minimumNumberOfUpgraders = 3;
-    var minimumNumberOfBuilders = 1;
+    var minimumNumberOfBuilders = 2;
     var minimumNumberOfRepairers = 2;
-    var minimumNumberOfWallRepairers = 2;
+    var minimumNumberOfWallRepairers = 1;
 	var maxNumberOfCreeps = 50;
 	
-    // count the number of creeps alive for each role
-    // _.sum will count the number of properties in Game.creeps filtered by the
-    //  arrow function, which checks for the creep being a harvester
     var numberOfHarvesters = _.sum(Game.creeps, (c) => c.memory.role == 'harvester');
     var numberOfUpgraders = _.sum(Game.creeps, (c) => c.memory.role == 'upgrader');
     var numberOfBuilders = _.sum(Game.creeps, (c) => c.memory.role == 'builder');

@@ -83,6 +83,6 @@ module.exports = function() {
 			//console.log(this.canCreateCreep(finalBody));
 
             // create creep with the created body and the given role
-            return this.createCreep(finalBody, undefined, { role: roleName, working: false });
+            return this.createCreep(finalBody, undefined, { role: roleName, working: false, jobQueueTask: undefined});
         };
 };

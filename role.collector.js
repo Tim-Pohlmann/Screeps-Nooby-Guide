@@ -4,12 +4,30 @@ module.exports = {
     	// find closest source
 		var returncode;
 		var source = creep.pos.findClosestByPath(FIND_SOURCES,{filter: (s) => s.energy > 0});
-		if (source == null) {
+		if (source != null) {
+
+			var sourcepath = creep.pos.findPathTo(source);
+			var sourcedist = sourcepath.length;
+		}
+		else {
+			var sourcedist = 99999;
+		}
+
+		var containers = creep.room.find(FIND_STRUCTURES,{filter: (s) => s.structureType == STRUCTURE_CONTAINER
+			&& s.store[RESOURCE_ENERGY] > 0});
+		if (containers.length > 0) {
+
+			var containerpath = creep.pos.findPathTo(containers[0]);
+			var containerdist = containerpath.length;
+		}
+		else {
+			var containerdist = 99999;
+		}
+
+		if (containerdist < sourcedist) {
 			//transfer from container
-			var containers = creep.room.find(FIND_STRUCTURES,{filter: (s) => s.structureType == STRUCTURE_CONTAINER
-																		&& s.store[RESOURCE_ENERGY] > 0});
+			returncode = creep.withdraw(containers[0], RESOURCE_ENERGY);
 			source = containers[0];
-			returncode = creep.withdraw(source, RESOURCE_ENERGY);
 		}
 		else {
 			//harvest from source
@@ -27,20 +45,7 @@ module.exports = {
 
 			case (ERR_NOT_IN_RANGE):
 				// move towards the source
-				var code;
-
-				switch (creep.memory.role) {
-					case "upgrader00":
-						var nearestCreep = creep.pos.findClosestByPath(FIND_MY_CREEPS, {filter: (s) => s.name != creep.name});
-						var pathToCreep = creep.pos.findPathTo(nearestCreep);
-						var pathToSource = creep.pos.findPathTo(source);
-						code = 0;
-					break;
-
-					default:
-						code = creep.moveTo(source);
-					break;
-				}
+				var code = creep.moveTo(source);
 								
 				if (code != 0) {
 					switch (code) {

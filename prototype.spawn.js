@@ -65,13 +65,13 @@ module.exports = function() {
 					break;
 
 				case "claimer":
-					body.push(CLAIM);//100
+					body.push(CLAIM);//600
 					body.push(CARRY); //50
 					body.push(CARRY); //50
 					body.push(WORK); //100
 					body.push(MOVE);  //50
 					body.push(MOVE);  //50
-					size=400;
+					size=900;
 					break;
 
 				case "protector":

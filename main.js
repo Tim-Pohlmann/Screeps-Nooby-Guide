@@ -8,6 +8,7 @@ var roleWallRepairer = require('role.wallRepairer');
 var roleJobber = require('role.jobber');
 var roleRemoteHarvester = require('role.remoteHarvester');
 var roleProtector = require('role.protector');
+var roleClaimer = require('role.claimer')
 
 module.exports.loop = function () {
     
@@ -30,12 +31,12 @@ module.exports.loop = function () {
             // loop through all spawns of the room
 
             var minimumNumberOfHarvesters = 3;
-            var minimumNumberOfRemoteHarvesters = 3;
+            var minimumNumberOfRemoteHarvesters = 2;
             var minimumNumberOfUpgraders = 2;
             var minimumNumberOfBuilders = 1;
             var minimumNumberOfRepairers = 2;
             var minimumNumberOfWallRepairers = 1;
-            var minimumNumberOfClaimers = 1;
+            var minimumNumberOfClaimers = 0;
             var minimumNumberOfProtectors = 1;
 
             var maxNumberOfCreeps = 30;
@@ -68,40 +69,32 @@ module.exports.loop = function () {
                 if (numberOfHarvesters < minimumNumberOfHarvesters) {
                     // try to spawn one
                     var rolename = 'harvester';
-
                     // if spawning failed and we have no harvesters left
                     if (numberOfHarvesters == 0) {
                         // spawn one with what is available
                         var rolename = 'miniharvester';
                     }
                 }
-                // if not enough upgrader
                 else if (numberOfUpgraders < minimumNumberOfUpgraders) {
                     var rolename = 'upgrader';
                 }
-                // if not enough repairers
                 else if (numberOfRepairers < minimumNumberOfRepairers) {
                     var rolename = 'repairer';
                 }
-                // if not enough builders
                 else if (numberOfBuilders < minimumNumberOfBuilders) {
                     var rolename = 'builder';
                 }
-                // if not enough wallRepairers
                 else if (numberOfWallRepairers < minimumNumberOfWallRepairers) {
                     var rolename = 'wallRepairer';
                 }
-                // if not enough protectors
                 else if (numberOfProtectors < minimumNumberOfProtectors) {
                     var rolename = 'protector';
                 }
-                // if not enough remoteHarvesters
-                else if (numberOfRemoteHarvesters < minimumNumberOfRemoteHarvesters) {
-                    var rolename = 'remoteHarvester';
-                }
-
                 else if (numberOfClaimers < minimumNumberOfClaimers) {
                     var rolename = 'claimer';
+                }
+                else if (numberOfRemoteHarvesters < minimumNumberOfRemoteHarvesters) {
+                    var rolename = 'remoteHarvester';
                 }
                 else {
                     var rolename = 'builder';
@@ -112,6 +105,9 @@ module.exports.loop = function () {
                 // name > 0 would not work since string > 0 returns false
                 if (!(name < 0)) {
                     console.log("Spawned new creep: " + name + " (" + rolename +")");
+                }
+                else {
+                    //console.log("Spawn error: " + name);
                 }
             }
         }
@@ -218,6 +214,9 @@ module.exports.loop = function () {
             }
             else if (creep.memory.role == 'protector') {
                 roleProtector.run(creep);
+            }
+            else if (creep.memory.role == 'claimer') {
+                roleClaimer.run(creep);
             }
         }
     }

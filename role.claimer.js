@@ -32,6 +32,11 @@ module.exports = {
                     //if invalid, probably claimed
                     roleUpgrader.run(creep);
                     break;
+
+                case ERR_GCL_NOT_ENOUGH:
+                    creep.reserveController(creep.room.controller);
+                    break;
+
                 default:
                     creep.say(returncode);
                     break;

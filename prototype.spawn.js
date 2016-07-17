@@ -11,17 +11,7 @@ module.exports = function() {
 					body.push(CARRY); //50
 					body.push(MOVE);  //50
 					size=200;
-					break;
-
-				case "remoteHarvester":
-					body.push(WORK); //100
-					body.push(CARRY); //50
-					body.push(CARRY); //50
-					body.push(MOVE);  //50
-					body.push(MOVE);  //50
-					body.push(MOVE);  //50
-					size=350;
-					break;
+				break;
 				
 				case "harvester":
 					body.push(WORK); //100
@@ -29,7 +19,7 @@ module.exports = function() {
 					body.push(CARRY); //50
 					body.push(MOVE);  //50
 					size=300;
-					break;
+				break;
 				
 				case "upgrader":
 					body.push(WORK); //100
@@ -38,22 +28,25 @@ module.exports = function() {
 					body.push(MOVE);  //50
 					body.push(MOVE);  //50
 					size=300;
-					break;
+
+				
+				break;
 				
 				case "repairer":
 					body.push(WORK); //100
 					body.push(CARRY); //50
 					body.push(MOVE);  //50
-					size=200;
-					break;
-
-				case "builder":
-					body.push(WORK); //100
-					body.push(CARRY); //50
-					body.push(MOVE);  //50
 					body.push(MOVE);  //50
 					size=250;
-					break;
+				break;
+
+				case "builder":
+				body.push(WORK); //100
+					body.push(CARRY); //50
+					body.push(CARRY);  //50
+					body.push(MOVE);  //50
+					size=250;
+				break;
 
 				case "wallRepairer":
 					body.push(WORK); //100
@@ -62,30 +55,14 @@ module.exports = function() {
 					body.push(MOVE);  //50
 					body.push(MOVE);  //50
 					size=300;
-					break;
-
-				case "claimer":
-					body.push(CLAIM);//100
-					body.push(CARRY); //50
-					body.push(CARRY); //50
-					body.push(WORK); //100
-					body.push(MOVE);  //50
-					body.push(MOVE);  //50
-					size=400;
-					break;
-
-				case "protector":
-					body.push(ATTACK);//100
-					body.push(MOVE);  //50
-					size=150;
-					break;
-
+				break;
+						
 				default:
 					body.push(WORK); //100
 					body.push(CARRY); //50
 					body.push(MOVE);  //50
 					size=200;
-					break;
+				break;
 			}
 			
          // create a balanced body as big as possible with the given energy
@@ -103,8 +80,9 @@ module.exports = function() {
 				}			
          	}
         }
-			// create creep with the created body and the given role
-			var spawnID = this.id;
-            return this.createCreep(finalBody, undefined, { role: roleName, working: false, spawn: spawnID, jobQueueTask: undefined});
+			//console.log(this.canCreateCreep(finalBody));
+
+            // create creep with the created body and the given role
+            return this.createCreep(finalBody, undefined, { role: roleName, working: false });
         };
 };

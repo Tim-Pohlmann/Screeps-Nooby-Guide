@@ -3,26 +3,34 @@ module.exports = {
     run: function(creep) {
     	// find closest source
 		var returncode;
-		var source = creep.pos.findClosestByPath(FIND_SOURCES,{filter: (s) => s.energy > 0});
-		if (source == null) {
-			//transfer from container
-			var containers = creep.room.find(FIND_STRUCTURES,{filter: (s) => s.structureType == STRUCTURE_CONTAINER
-																		&& s.store[RESOURCE_ENERGY] > 0});
-			source = containers[0];
-			returncode = creep.withdraw(source, RESOURCE_ENERGY);
-		}
-		else {
-			//harvest from source
-			returncode = creep.harvest(source);
-		}
+		var source = creep.pos.findClosestByPath(FIND_DROPPED_ENERGY);
+		var droppedEnergy = false;
 
+		if (source == null) {
+			//no dropped energy found, switching to sources
+			source = creep.pos.findClosestByPath(FIND_SOURCES,{filter: (s) => s.energy > 0});
+			
+			returncode = creep.harvest(source);			
+		}	
+		else {
+			// dropped energy found
+			returncode = creep.pickup(source);
+			droppedEnergy = true;
+		}
 		switch(returncode){
 			case (OK):
 
 			break;
 
 			case (ERR_INVALID_TARGET):
+				if (droppedEnergy == false) {
+					//all energy sources fully camped
 
+					//ssourcepath = creep.pos.findPathTo(FIND_SOURCES,{filter: (s) => s.energy > 0});
+					//sourcestring = creep.room.serializedPath(source);
+					//creep.say(sourcestring.length);
+				}
+				
 			break;
 
 			case (ERR_NOT_IN_RANGE):

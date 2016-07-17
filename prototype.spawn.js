@@ -12,6 +12,14 @@ module.exports = function() {
 					body.push(MOVE);  //50
 					size=200;
 				break;
+
+				case "remoteHarvester":
+					body.push(WORK); //100
+					body.push(WORK); //100
+					body.push(CARRY); //50
+					body.push(MOVE);  //50
+					size=300;
+					break;
 				
 				case "harvester":
 					body.push(WORK); //100
@@ -83,6 +91,7 @@ module.exports = function() {
 			//console.log(this.canCreateCreep(finalBody));
 
             // create creep with the created body and the given role
-            return this.createCreep(finalBody, undefined, { role: roleName, working: false });
+			var spawnID = this.id;
+            return this.createCreep(finalBody, undefined, { role: roleName, working: false, spawn: spawnID, jobQueueTask: undefined});
         };
 };

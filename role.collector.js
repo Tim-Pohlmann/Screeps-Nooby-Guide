@@ -3,9 +3,18 @@ module.exports = {
     run: function(creep) {
     	// find closest source
 		var returncode;
-		source = creep.pos.findClosestByPath(FIND_SOURCES,{filter: (s) => s.energy > 0});
-
-		returncode = creep.harvest(source);
+		var source = creep.pos.findClosestByPath(FIND_SOURCES,{filter: (s) => s.energy > 0});
+		if (source == null) {
+			//transfer from container
+			var containers = creep.room.find(FIND_STRUCTURES,{filter: (s) => s.structureType == STRUCTURE_CONTAINER
+																		&& s.store[RESOURCE_ENERGY] > 0});
+			source = containers[0];
+			returncode = creep.withdraw(source, RESOURCE_ENERGY);
+		}
+		else {
+			//harvest from source
+			returncode = creep.harvest(source);
+		}
 
 		switch(returncode){
 			case (OK):

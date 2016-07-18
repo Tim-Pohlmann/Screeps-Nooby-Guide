@@ -29,7 +29,7 @@ module.exports = {
                 }
                 if (creep.moveByPath(creep.memory.path) == ERR_NOT_FOUND) {
                     creep.memory.path = creep.pos.findPathTo(Game.flags.remoteSource);
-                    creep.moveByPath(creep.memory.path)
+                    creep.moveByPath(creep.memory.path);
                 }
             }
             else {

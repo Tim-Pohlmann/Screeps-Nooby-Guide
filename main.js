@@ -47,7 +47,13 @@ module.exports.loop = function () {
                 minimumNumberOfRemoteHarvesters = 0;
                 minimumNumberOfClaimers = 0;
                 minimumNumberOfProtectors = 0;
-            }
+            }/* TODO: Check if room is still unclaimed, otherwise don't spawn claimer
+            else if (!remoteSource.room.controller.owner) {
+                if (remoteSource.room.controller.owner == Game.rooms[r].controller.owner) {
+                    //Target room already claimed
+                    minimumNumberOfClaimers = 0;
+                }
+            }*/
 
             var numberOfHarvesters = _.sum(Game.creeps, (c) => c.memory.role == 'harvester');
             var numberOfRemoteHarvesters = _.sum(Game.creeps, (c) => c.memory.role == 'remoteHarvester');

@@ -9,6 +9,7 @@ var roleJobber = require('role.jobber');
 var roleRemoteHarvester = require('role.remoteHarvester');
 var roleProtector = require('role.protector');
 var roleClaimer = require('role.claimer')
+var roleStationaryHarvester = require('role.stationaryHarvester');
 
 module.exports.loop = function () {
     
@@ -30,13 +31,14 @@ module.exports.loop = function () {
         for (var spawn in spawns) {
             // loop through all spawns of the room
 
-            var minimumNumberOfHarvesters = 3;
+            var minimumNumberOfHarvesters = 2;
             var minimumNumberOfRemoteHarvesters = 2;
-            var minimumNumberOfUpgraders = 2;
+            var minimumNumberofStationaryHarvesters = 1;
+            var minimumNumberOfUpgraders = 1;
             var minimumNumberOfBuilders = 1;
             var minimumNumberOfRepairers = 2;
             var minimumNumberOfWallRepairers = 1;
-            var minimumNumberOfClaimers = 0;
+            var minimumNumberOfClaimers = 1;
             var minimumNumberOfProtectors = 1;
 
             var maxNumberOfCreeps = 30;
@@ -45,18 +47,28 @@ module.exports.loop = function () {
             var remoteSource = Game.flags.remoteSource;
             if (remoteSource == undefined) {
                 minimumNumberOfRemoteHarvesters = 0;
-                minimumNumberOfClaimers = 0;
                 minimumNumberOfProtectors = 0;
-            }/* TODO: Check if room is still unclaimed, otherwise don't spawn claimer
-            else if (!remoteSource.room.controller.owner) {
-                if (remoteSource.room.controller.owner == Game.rooms[r].controller.owner) {
-                    //Target room already claimed
-                    minimumNumberOfClaimers = 0;
-                }
-            }*/
+            }
+
+            // Check for active flag "remoteController" TODO: Check if in neighboring room before spawning creeps for it
+            var remoteController = Game.flags.remoteController;
+            if (remoteController == undefined) {
+                minimumNumberOfClaimers = 0;
+            }
+            else if (remoteController.constructor.owner != undefined && remoteController.room.controller.owner.username == Game.rooms[r].controller.owner.username) {
+                //Target room already claimed
+                minimumNumberOfClaimers = 0;
+            }
+
+            // Check for active flag "narrowSource"
+            var narrowSource = Game.flags.narrowSource;
+            if (narrowSource == undefined) {
+                minimumNumberofStationaryHarvesters = 0;
+            }
 
             var numberOfHarvesters = _.sum(Game.creeps, (c) => c.memory.role == 'harvester');
             var numberOfRemoteHarvesters = _.sum(Game.creeps, (c) => c.memory.role == 'remoteHarvester');
+            var numberOfStationaryHarvesters = _.sum(Game.creeps, (c) => c.memory.role == 'stationaryHarvester');
             var numberOfUpgraders = _.sum(Game.creeps, (c) => c.memory.role == 'upgrader');
             var numberOfBuilders = _.sum(Game.creeps, (c) => c.memory.role == 'builder');
             var numberOfRepairers = _.sum(Game.creeps, (c) => c.memory.role == 'repairer');
@@ -80,6 +92,9 @@ module.exports.loop = function () {
                         // spawn one with what is available
                         var rolename = 'miniharvester';
                     }
+                }
+                else if (numberOfStationaryHarvesters < minimumNumberofStationaryHarvesters) {
+                    var rolename = 'stationaryHarvester';
                 }
                 else if (numberOfUpgraders < minimumNumberOfUpgraders) {
                     var rolename = 'upgrader';
@@ -110,7 +125,7 @@ module.exports.loop = function () {
                 // print name to console if spawning was a success
                 // name > 0 would not work since string > 0 returns false
                 if (!(name < 0)) {
-                    console.log("Spawned new creep: " + name + " (" + rolename +")");
+                    console.log("Spawned new creep: " + name + " (" + rolename + ")");
                 }
                 else {
                     //console.log("Spawn error: " + name);
@@ -163,7 +178,8 @@ module.exports.loop = function () {
             var energyAmount = energies[energy].amount;
 
             var collector = energies[energy].pos.findClosestByPath(FIND_MY_CREEPS, { 
-                filter: (s) => (s.carryCapacity - _.sum(s.carry) - energyAmount) > 0 });
+                filter: (s) => (s.carryCapacity - _.sum(s.carry) - energyAmount) > 0
+                && s.memory.role != "stationaryHarvester"});
 
             if (collector != null) {
                 // Creep found to pick up dropped energy
@@ -223,6 +239,9 @@ module.exports.loop = function () {
             }
             else if (creep.memory.role == 'claimer') {
                 roleClaimer.run(creep);
+            }
+            else if (creep.memory.role == 'stationaryHarvester') {
+                roleStationaryHarvester.run(creep);
             }
         }
     }

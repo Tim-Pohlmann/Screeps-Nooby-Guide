@@ -38,7 +38,7 @@ module.exports = {
                 // back in spawn room
                 var structures = creep.room.find(FIND_STRUCTURES, {
                             filter: (s) => (s.structureType == STRUCTURE_CONTAINER
-                            && s.storeCapacity - _.sum(s.store))});
+                            && s.storeCapacity - _.sum(s.store) > 0)});
                 var structure = structures[0];
 
                 //structure = null;

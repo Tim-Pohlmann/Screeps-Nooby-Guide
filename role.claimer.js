@@ -11,10 +11,10 @@ module.exports = {
             //still in old room, go out
 
             if(!creep.memory.path) {
-                creep.memory.path = creep.pos.findPathTo(Game.flags.remoteSource);
+                creep.memory.path = creep.pos.findPathTo(Game.flags.remoteController);
             }
             if (creep.moveByPath(creep.memory.path) == ERR_NOT_FOUND) {
-                creep.memory.path = creep.pos.findPathTo(Game.flags.remoteSource);
+                creep.memory.path = creep.pos.findPathTo(Game.flags.remoteController);
                 creep.moveByPath(creep.memory.path)
             }
         }

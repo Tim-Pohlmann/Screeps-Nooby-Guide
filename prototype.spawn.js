@@ -24,7 +24,7 @@ module.exports = function() {
 					body.push(MOVE);  //50
 					body.push(MOVE);  //50
 					size=350;
-					sizelimit = 4;
+					sizelimit = 99;
 					break;
 				
 				case "harvester":
@@ -33,9 +33,22 @@ module.exports = function() {
 					body.push(CARRY); //50
 					body.push(MOVE);  //50
 					size=300;
-					sizelimit = 4;
+					sizelimit = 99;
 					break;
 
+				case "stationaryHarvester":
+					body.push(WORK); //100
+					body.push(WORK); //100
+					body.push(WORK); //100
+					body.push(WORK); //100
+					body.push(WORK); //100
+					body.push(CARRY); //50
+					body.push(CARRY); //50
+					body.push(MOVE);  //50
+					body.push(MOVE);  //50
+					size=700;
+					sizelimit = 1;
+					break;
 				
 				case "upgrader":
 					body.push(WORK); //100
@@ -44,7 +57,7 @@ module.exports = function() {
 					body.push(MOVE);  //50
 					body.push(MOVE);  //50
 					size=300;
-					sizelimit = 4;
+					sizelimit = 99;
 					break;
 				
 				case "repairer":
@@ -52,7 +65,7 @@ module.exports = function() {
 					body.push(CARRY); //50
 					body.push(MOVE);  //50
 					size=200;
-					sizelimit = 5;
+					sizelimit = 99;
 					break;
 
 				case "builder":
@@ -61,7 +74,7 @@ module.exports = function() {
 					body.push(MOVE);  //50
 					body.push(MOVE);  //50
 					size=250;
-					sizelimit = 5;
+					sizelimit = 99;
 					break;
 
 				case "wallRepairer":
@@ -71,7 +84,7 @@ module.exports = function() {
 					body.push(MOVE);  //50
 					body.push(MOVE);  //50
 					size=300;
-					sizelimit = 4;
+					sizelimit = 99;
 					break;
 
 				case "claimer":
@@ -80,14 +93,14 @@ module.exports = function() {
 					body.push(MOVE);  //50
 					body.push(MOVE);  //50
 					size=1300;
-					sizelimit = 15;
+					sizelimit = 99;
 					break;
 
 				case "protector":
 					body.push(ATTACK);//100
 					body.push(MOVE);  //50
 					size=150;
-					sizelimit = 15;
+					sizelimit = 8;
 					break;
 
 				default:

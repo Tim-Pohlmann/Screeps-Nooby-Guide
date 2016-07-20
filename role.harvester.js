@@ -41,6 +41,10 @@ module.exports = {
 
 				}					
 			}
+			else {
+				// TODO: Transfer energy into nearest container
+
+			}
 		}
         // if creep is supposed to harvest energy from source
         else {

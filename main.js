@@ -1,5 +1,6 @@
 // import modules
 require('prototype.spawn')();
+require('prototype.creep')();
 var roleHarvester = require('role.harvester');
 var roleUpgrader = require('role.upgrader');
 var roleBuilder = require('role.builder');
@@ -31,15 +32,15 @@ module.exports.loop = function () {
         for (var spawn in spawns) {
             // loop through all spawns of the room
 
-            var minimumNumberOfHarvesters = 2;
+            var minimumNumberOfHarvesters = 3;
             var minimumNumberOfRemoteHarvesters = 2;
             var minimumNumberofStationaryHarvesters = 1;
             var minimumNumberOfUpgraders = 1;
             var minimumNumberOfBuilders = 1;
-            var minimumNumberOfRepairers = 2;
+            var minimumNumberOfRepairers = 1;
             var minimumNumberOfWallRepairers = 1;
             var minimumNumberOfClaimers = 1;
-            var minimumNumberOfProtectors = 1;
+            var minimumNumberOfProtectors = 0;
 
             var maxNumberOfCreeps = 30;
 
@@ -181,6 +182,12 @@ module.exports.loop = function () {
                 filter: (s) => (s.carryCapacity - _.sum(s.carry) - energyAmount) > 0
                 && s.memory.role != "stationaryHarvester"});
 
+            if (collector == null) {
+                var collector = energies[energy].pos.findClosestByPath(FIND_MY_CREEPS, {
+                        filter: (s) => (s.carryCapacity - _.sum(s.carry)) > 0
+                    && s.memory.role != "stationaryHarvester"});
+            }
+
             if (collector != null) {
                 // Creep found to pick up dropped energy
                 collector.memory.jobQueueObject = energyID;
@@ -206,7 +213,6 @@ module.exports.loop = function () {
                     roleJobber.run(creep,"droppedEnergy");
                 break;
             }
-
             creep.memory.jobQueueTask = undefined;
         }
         else {

@@ -32,7 +32,8 @@ module.exports = function() {
 					body.push(WORK); //100
 					body.push(CARRY); //50
 					body.push(MOVE);  //50
-					size=300;
+					body.push(MOVE);  //50
+					size=350;
 					sizelimit = 99;
 					break;
 
@@ -72,8 +73,7 @@ module.exports = function() {
 					body.push(WORK); //100
 					body.push(CARRY); //50
 					body.push(MOVE);  //50
-					body.push(MOVE);  //50
-					size=250;
+					size=200;
 					sizelimit = 99;
 					break;
 

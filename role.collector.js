@@ -1,8 +1,42 @@
 module.exports = {
     // a function to run the logic for this role
     run: function(creep) {
+    	// check for picked up resources
+		for (var resourceType in creep.carry) {
+			//creep.drop(resourceType);
+			switch (resourceType) {
+				case "energy":
+					break;
+
+				case "ZH":
+					// find closest container with space
+					var freeContainers = creep.room.find(FIND_STRUCTURES,{filter: (s) => s.structureType == STRUCTURE_CONTAINER
+					&& s.storeCapacity - _.sum(s.store) > 0});
+
+					var distancebuffer = 99999;
+					if (freeContainers.length > 0) {
+						for (var i in containers) {
+							var pathbuffer = creep.pos.findPathTo(freeContainers[i]);
+							if (pathbuffer.length < distancebuffer) {
+								var rescontainer = freeContainers[i];
+								distancebuffer = pathbuffer.length;
+							}
+						}
+					}
+					if (creep.transfer(rescontainer,resourceType) == ERR_NOT_IN_RANGE) {
+						creep.moveTo(rescontainer);
+					}
+					break;
+
+				default:
+					creep.say(resourceType);
+					break;
+			}
+		}
+
     	// find closest source
 		var returncode;
+		var container;
 		var source = creep.pos.findClosestByPath(FIND_SOURCES,{filter: (s) => s.energy > 0});
 		if (source != null) {
 
@@ -13,25 +47,35 @@ module.exports = {
 			var sourcedist = 99999;
 		}
 
+		// find closest container with energy
 		var containers = creep.room.find(FIND_STRUCTURES,{filter: (s) => s.structureType == STRUCTURE_CONTAINER
 			&& s.store[RESOURCE_ENERGY] > 0});
+		var containerdist = 99999;
 		if (containers.length > 0) {
-
-			var containerpath = creep.pos.findPathTo(containers[0]);
-			var containerdist = containerpath.length;
+			for (var i in containers) {
+				var containerpath = creep.pos.findPathTo(containers[i]);
+				if (containerpath.length < containerdist) {
+					container = containers[i];
+					containerdist = containerpath.length;
+				}
+			}
 		}
 		else {
-			var containerdist = 99999;
+			container = undefined;
 		}
+		var pathToSource;
 
-		if (containerdist < sourcedist) {
+		// Compare distances to select nearest energy source
+		if (container != undefined && containerdist < sourcedist) {
 			//transfer from container
-			returncode = creep.withdraw(containers[0], RESOURCE_ENERGY);
-			source = containers[0];
+			returncode = creep.withdraw(container, RESOURCE_ENERGY);
+			source = container;
+			pathToSource = containerpath;
 		}
 		else {
 			//harvest from source
 			returncode = creep.harvest(source);
+			pathToSource = sourcepath;
 		}
 
 		switch(returncode){
@@ -67,6 +111,10 @@ module.exports = {
 					}
 				}
 			break;
+
+			case -8:
+				creep.say("Full");
+				break;
 
 			default:
 				creep.say(returncode);

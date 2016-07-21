@@ -41,6 +41,15 @@ module.exports = {
 
 				}					
 			}
+			else {
+				var contArray = creep.findClosestContainer(0);
+				var container = contArray.container;
+
+				if (creep.transfer(container, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+					// move towards it
+					creep.moveTo(container, {reusePath: 5});
+				}
+			}
 		}
         // if creep is supposed to harvest energy from source
         else {

@@ -21,6 +21,9 @@ module.exports = {
         else {
             //new room reached, start reserving / claiming
             // try to claim the controller
+            if (creep.room.controller.owner != undefined && creep.room.controller.owner.username == spawn.room.controller.owner.username) {
+                creep.suicide();
+            }
             var returncode = creep.claimController(creep.room.controller);
 
             switch (returncode) {
@@ -31,11 +34,6 @@ module.exports = {
 
                 case ERR_INVALID_TARGET:
                     //if invalid, probably claimed
-                    if (creep.room.controller.owner == spawn.room.controller.owner) {
-                        //no claimer needed anymore
-                        creep.suicide();
-                    }
-
                     break;
 
                 case ERR_GCL_NOT_ENOUGH:

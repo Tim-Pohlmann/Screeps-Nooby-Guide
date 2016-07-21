@@ -8,14 +8,18 @@ module.exports = {
     		case "source":
 				var source = creep.pos.findClosestByPath(FIND_SOURCES,{filter: (s) => s.energy > 0});
 				returncode = creep.harvest(source);
-    		break;
+    			break;
 
 			case "droppedEnergy":
     			var source = creep.pos.findClosestByPath(FIND_DROPPED_ENERGY);
     			returncode = creep.pickup(source);
 
 				creep.jobQueueTask = undefined;
-    		break;
+    			break;
+
+			case "remoteBuild":
+				creep.jobQueueTask = undefined;
+				break;
     	}
 
     	//Collecting finished

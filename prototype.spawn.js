@@ -32,7 +32,8 @@ module.exports = function() {
 					body.push(WORK); //100
 					body.push(CARRY); //50
 					body.push(MOVE);  //50
-					size=300;
+					body.push(MOVE);  //50
+					size=350;
 					sizelimit = 99;
 					break;
 
@@ -128,6 +129,8 @@ module.exports = function() {
 
 		// create creep with the created body and the given role
 		var spawnID = this.id;
-		return this.createCreep(finalBody, undefined, { role: roleName, working: false, spawn: spawnID, jobQueueTask: undefined});
+		var homeRoom = this.room.name;
+
+		return this.createCreep(finalBody, undefined, { role: roleName, working: false, spawn: spawnID, jobQueueTask: undefined, homeroom: homeRoom});
 	}
 };

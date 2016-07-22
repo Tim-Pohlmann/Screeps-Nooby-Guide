@@ -39,7 +39,9 @@ module.exports = {
                 else {
                     container = Game.getObjectById(creep.memory.narrowContainer);
                 }
-                creep.transfer(container, RESOURCE_ENERGY);
+                if (creep.transfer(container, RESOURCE_ENERGY) != OK) {
+                    delete creep.memory.narrowContainer;
+                }
             }
 
         }

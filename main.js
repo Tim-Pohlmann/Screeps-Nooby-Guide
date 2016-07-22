@@ -38,23 +38,27 @@ module.exports.loop = function () {
         if (spawns.length == 0) {
             //room has no spawner yet
 
-            if (Game.rooms[r].controller.owner.username == playerUsername) {
+            if (Game.rooms[r].controller.owner != undefined && Game.rooms[r].controller.owner.username == playerUsername) {
                 //room is owned and should be updated
 
                 var upgraderRecruits = Game.rooms[r].find(FIND_MY_CREEPS, {filter: (s) => (s.memory.role == "upgrader")});
                 if (upgraderRecruits.length < 1) {
                     // find adjacent rooms
                     var exits = Game.map.describeExits(Game.rooms[r].name);
-
+                    var roomName;
                     for (var x in exits) {
                         if(Game.rooms[exits[x]] != undefined){
                             var newUpgraders = Game.rooms[exits[x]].find(FIND_MY_CREEPS, {filter: (s) => (s.memory.role == "upgrader") && s.room == Game.rooms[exits[x]]});
-                            var targetCreep = newUpgraders[0];
-
-                            targetCreep.memory.homeroom = Game.rooms[r].name;
-                            targetCreep.memory.spawn =  Game.rooms[r].controller.id;
-                            console.log(targetCreep + " has been captured by room " + Game.rooms[exits[x]].name);
+                            if (newUpgraders.length > 0) {
+                                var targetCreep = newUpgraders[0];
+                                roomName=Game.rooms[exits[x]].name;
+                            }
                         }
+                    }
+                    if (targetCreep != undefined) {
+                        targetCreep.memory.homeroom = Game.rooms[r].name;
+                        targetCreep.memory.spawn =  Game.rooms[r].controller.id;
+                        console.log(targetCreep + " has been captured as an upgrader by room " + roomName + ".");
                     }
                 }
 
@@ -65,13 +69,16 @@ module.exports.loop = function () {
 
                     for (var x in exits) {
                         if(Game.rooms[exits[x]] != undefined){
-                            var newBuilders = Game.rooms[exits[x]].find(FIND_MY_CREEPS, {filter: (s) => (s.memory.role == "builder") && s.room == Game.rooms[exits[x]]});
+                            var newBuilders = Game.rooms[exits[x]].find(FIND_MY_CREEPS, {filter: (s) => (s.memory.role == "builder") && s.room.name == Game.rooms[exits[x]].name});
                             var targetCreep = newBuilders[0];
-
-                            targetCreep.memory.homeroom = Game.rooms[r].name;
-                            targetCreep.memory.spawn =  Game.rooms[r].controller.id;
-                            console.log(targetCreep.name + " has been captured by room " + Game.rooms[exits[x]].name);
+                            roomName=Game.rooms[exits[x]].name;
                         }
+                    }
+
+                    if (targetCreep != undefined) {
+                        targetCreep.memory.homeroom = Game.rooms[r].name;
+                        targetCreep.memory.spawn =  Game.rooms[r].controller.id;
+                        console.log(targetCreep.name + " has been captured as an builder " + roomName + ".");
                     }
                 }
 
@@ -80,8 +87,8 @@ module.exports.loop = function () {
 
         // loop through all spawns of the room
         for (var spawn in spawns) {
-            var minimumNumberOfHarvesters = 3;
-            var minimumNumberOfRemoteHarvesters = 1;
+            var minimumNumberOfHarvesters = 2;
+            var minimumNumberOfRemoteHarvesters = 0;
             var minimumNumberofStationaryHarvesters = 1;
             var minimumNumberOfUpgraders = 1;
             var minimumNumberOfBuilders = 1;
@@ -117,16 +124,25 @@ module.exports.loop = function () {
                 minimumNumberofStationaryHarvesters = 0;
             }
 
-            var numberOfHarvesters = _.sum(Game.creeps, (c) => c.memory.role == 'harvester' && c.memory.spawn == spawns[spawn].id);
-            var numberOfRemoteHarvesters = _.sum(Game.creeps, (c) => c.memory.role == 'remoteHarvester' && c.memory.spawn == spawns[spawn].id);
-            var numberOfStationaryHarvesters = _.sum(Game.creeps, (c) => c.memory.role == 'stationaryHarvester' && c.memory.spawn == spawns[spawn].id);
-            var numberOfUpgraders = _.sum(Game.creeps, (c) => c.memory.role == 'upgrader' && c.memory.spawn == spawns[spawn].id);
-            var numberOfBuilders = _.sum(Game.creeps, (c) => c.memory.role == 'builder' && c.memory.spawn == spawns[spawn].id);
-            var numberOfRepairers = _.sum(Game.creeps, (c) => c.memory.role == 'repairer' && c.memory.spawn == spawns[spawn].id);
-            var numberOfWallRepairers = _.sum(Game.creeps, (c) => c.memory.role == 'wallRepairer' && c.memory.spawn == spawns[spawn].id);
-            var numberOfClaimers = _.sum(Game.creeps, (c) => c.memory.role == 'claimer' && c.memory.spawn == spawns[spawn].id);
-            var numberOfProtectors = _.sum(Game.creeps, (c) => c.memory.role == 'protector' && c.memory.spawn == spawns[spawn].id);
+            var numberOfHarvesters = spawns[spawn].room.find(FIND_MY_CREEPS, {filter: (s) => (s.memory.role == "harvester")});
+            var numberOfStationaryHarvesters = spawns[spawn].room.find(FIND_MY_CREEPS, {filter: (s) => (s.memory.role == "stationaryHarvester")});
+            var numberOfRemoteHarvesters = spawns[spawn].room.find(FIND_MY_CREEPS, {filter: (s) => (s.memory.role == "remoteHarvester")});
+            var numberOfUpgraders = spawns[spawn].room.find(FIND_MY_CREEPS, {filter: (s) => (s.memory.role == "upgrader")});
+            var numberOfBuilders = spawns[spawn].room.find(FIND_MY_CREEPS, {filter: (s) => (s.memory.role == "builder")});
+            var numberOfRepairers = spawns[spawn].room.find(FIND_MY_CREEPS, {filter: (s) => (s.memory.role == "repairer")});
+            var numberOfWallRepairers = spawns[spawn].room.find(FIND_MY_CREEPS, {filter: (s) => (s.memory.role == "wallRepairer")});
+            var numberOfProtectors = spawns[spawn].room.find(FIND_MY_CREEPS, {filter: (s) => (s.memory.role == "protector")});
+            var numberOfClaimers = spawns[spawn].room.find(FIND_MY_CREEPS, {filter: (s) => (s.memory.role == "claimer")});
 
+            numberOfHarvesters = numberOfHarvesters.length;
+            numberOfStationaryHarvesters = numberOfStationaryHarvesters.length;
+            numberOfRemoteHarvesters = numberOfRemoteHarvesters.length;
+            numberOfUpgraders = numberOfUpgraders.length;
+            numberOfBuilders = numberOfBuilders.length;
+            numberOfRepairers = numberOfRepairers.length;
+            numberOfWallRepairers = numberOfWallRepairers.length;
+            numberOfProtectors = numberOfProtectors.length;
+            numberOfClaimers = numberOfClaimers.length;
             var energy = spawns[spawn].room.energyCapacityAvailable;
             var name = undefined;
 
@@ -138,7 +154,7 @@ module.exports.loop = function () {
                     // try to spawn one
                     var rolename = 'harvester';
                     // if spawning failed and we have no harvesters left
-                    if (numberOfHarvesters == 0  && spawns[spawn].energyAvailable < 350) {
+                    if (numberOfHarvesters == 0  || spawns[spawn].energyCapacityAvailable < 350) {
                         // spawn one with what is available
                         var rolename = 'miniharvester';
                     }
@@ -193,7 +209,7 @@ module.exports.loop = function () {
 
             if(hostiles.length > 0) {
                 var username = hostiles[0].owner.username;
-                Game.notify("Hostile creep " + username + " spotted!");
+                Game.notify("Hostile creep " + username + " spotted in room " + Game.rooms[r].name + "!");
                      
                 towers.forEach(tower => tower.attack(hostiles[0]));
             }
@@ -226,23 +242,25 @@ module.exports.loop = function () {
             var energyID = energies[energy].id;
             var energyAmount = energies[energy].amount;
 
-            var collector = energies[energy].pos.findClosestByPath(FIND_MY_CREEPS, { 
-                filter: (s) => (s.carryCapacity - _.sum(s.carry) - energyAmount) > 0
-                && s.memory.role != "stationaryHarvester"});
-
-            if (collector == null) {
+            if (energyAmount > 5) {
                 var collector = energies[energy].pos.findClosestByPath(FIND_MY_CREEPS, {
-                        filter: (s) => (s.carryCapacity - _.sum(s.carry)) > 0
+                        filter: (s) => (s.carryCapacity - _.sum(s.carry) - energyAmount) > 0
                     && s.memory.role != "stationaryHarvester"});
-            }
 
-            if (collector != null) {
-                // Creep found to pick up dropped energy
-                collector.memory.jobQueueObject = energyID;
-                collector.memory.jobQueueTask = "pickUpEnergy";
-                //console.log(energyID + ": " + energyAmount + " " + energies[energy].resourceType + " (" + Game.rooms[r] + ": " + energies[energy].pos.x + "/" + energies[energy].pos.y);
-                //console.log(collector.name);
-                roleJobber.run(collector, "droppedEnergy")
+                if (collector == null) {
+                    var collector = energies[energy].pos.findClosestByPath(FIND_MY_CREEPS, {
+                            filter: (s) => (s.carryCapacity - _.sum(s.carry)) > 0
+                        && s.memory.role != "stationaryHarvester"});
+                }
+
+                if (collector != null) {
+                    // Creep found to pick up dropped energy
+                    collector.memory.jobQueueObject = energyID;
+                    collector.memory.jobQueueTask = "pickUpEnergy";
+                    //console.log(energyID + ": " + energyAmount + " " + energies[energy].resourceType + " (" + Game.rooms[r] + ": " + energies[energy].pos.x + "/" + energies[energy].pos.y);
+                    //console.log(collector.name);
+                    roleJobber.run(collector, "droppedEnergy")
+                }
             }
         }
     }

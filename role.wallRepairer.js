@@ -18,7 +18,7 @@ module.exports = {
         // if creep is supposed to repair something
         if (creep.memory.working == true) {
 			
-			var walls = creep.room.find(FIND_STRUCTURES, { filter: (s) => s.structureType == STRUCTURE_WALL });
+			var walls = creep.room.find(FIND_STRUCTURES, { filter: (s) => s.structureType == STRUCTURE_WALL || s.structureType == STRUCTURE_RAMPART});
 			var target = undefined;
 
 			// loop with increasing percentages

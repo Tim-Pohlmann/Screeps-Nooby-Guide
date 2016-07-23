@@ -4,8 +4,24 @@ module.exports = {
     // state working = Returning energy to structure
 
     run: function(creep) {
+        //Look for vacant source marked as narrowSource
 
-        if (creep.pos.isEqualTo(Game.flags.narrowSource.pos.x, Game.flags.narrowSource.pos.y)) {
+        if (creep.memory.staticX == undefined || creep.memory.staticY == undefined) {
+            var narrowSources = creep.room.find(FIND_FLAGS, {filter: (s) => (s.memory.spawn == creep.memory.spawn && s.memory.function == "narrowSource")});
+            for (var n in narrowSources) {
+                var busyCreeps = creep.room.find(FIND_MY_CREEPS, {filter: (s) => (s.memory.spawn == creep.memory.spawn && s.memory.function == "narrowSource")
+                                                                && s.memory.staticX == narrowSources[n].pos.x && s.memory.staticY == narrowSources[n].pos.y});
+                if(busyCreeps.length == 0) {
+                    //no other stationary harvesters working on this source
+                    creep.memory.staticX = narrowSources[n].pos.x;
+                    creep.memory.staticY = narrowSources[n].pos.y;
+                    break;
+                }
+            }
+        }
+
+
+        if (creep.pos.isEqualTo(creep.memory.staticX, creep.memory.staticY)) {
             // Harvesting position reached
 
             if (creep.carry.energy < creep.carryCapacity) {
@@ -18,7 +34,6 @@ module.exports = {
                 else {
                     var source = Game.getObjectById(creep.memory.narrowSource);
                 }
-
                 creep.harvest(source);
             }
             else {
@@ -43,15 +58,14 @@ module.exports = {
                     delete creep.memory.narrowContainer;
                 }
             }
-
         }
         else {
             // Move to harvesting point
             if (!creep.memory.path) {
-                creep.memory.path = creep.pos.findPathTo(Game.flags.narrowSource);
+                creep.memory.path = creep.pos.findPathTo(creep.memory.staticX, creep.memory.staticY);
             }
             if (creep.moveByPath(creep.memory.path) == ERR_NOT_FOUND) {
-                creep.memory.path = creep.pos.findPathTo(Game.flags.narrowSource);
+                creep.memory.path = creep.pos.findPathTo(creep.memory.staticX, creep.memory.staticY);
                 creep.moveByPath(creep.memory.path);
             }
         }

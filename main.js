@@ -33,7 +33,6 @@ module.exports.loop = function () {
 
     // Cycle through rooms    
     for (var r in Game.rooms) {
-
         // Spawn code
         var spawns = Game.rooms[r].find(FIND_MY_SPAWNS);
         if (spawns.length == 0) {
@@ -86,11 +85,26 @@ module.exports.loop = function () {
             }
         }
         else {
-
             // loop through all spawns of the room
             for (var spawn in spawns) {
-                var numberOfSources;
+                /* TODO: Search room for flags by attribute -> flag name can only be used once
+                var flags = Game.rooms[r].find(FIND_FLAGS, {filter: (s) => (s.memory.spawn == spawns[spawn].id)});
+                for (var f in flags) {
+                    if (flags[f].memory.spawn != undefined) {
+                        switch (flags[f].memory.function) {
+                            case "narrowSource":
+                                //Marker for stationary harvesters
+                                break;
 
+                            case "remoteSource":
+                                //Marker for remote harvesters
+                                break;
+                        }
+                    }
+                }
+                */
+                //Code for spawn scaling
+                var numberOfSources;
                 if (spawns[spawn].memory.numberOfSources == undefined) {
                     var sources = spawns[spawn].room.find(FIND_SOURCES);
                     numberOfSources = sources.length;
@@ -135,10 +149,9 @@ module.exports.loop = function () {
                 }
 
                 // Check for active flag "narrowSource"
-                var narrowSource = Game.flags.narrowSource;
-                if (narrowSource == undefined || Game.flags.narrowSource.room.name != spawns[spawn].room.name) {
-                    minimumNumberofStationaryHarvesters = 0;
-                }
+                var narrowSources = Game.rooms[r].find(FIND_FLAGS, {filter: (s) => (s.memory.spawn == spawns[spawn].id) && s.memory.function == "narrowSource"});
+                minimumNumberofStationaryHarvesters = narrowSources.length;
+
                 var numberOfHarvesters = spawns[spawn].room.find(FIND_MY_CREEPS, {filter: (s) => (s.memory.role == "harvester")});
                 var numberOfStationaryHarvesters = spawns[spawn].room.find(FIND_MY_CREEPS, {filter: (s) => (s.memory.role == "stationaryHarvester")});
                 var numberOfRemoteHarvesters = spawns[spawn].room.find(FIND_MY_CREEPS, {filter: (s) => (s.memory.role == "remoteHarvester")});

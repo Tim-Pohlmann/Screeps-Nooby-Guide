@@ -1,0 +1,11 @@
+The following info is needed to configure the scripts and play the game. And since I tend to forget things, I'll try to write it down:
+
+FLAGS
+-----
+narrowSource
+The function "narrowSource" is used to mark energy sources for stationary harvesters. Without such flags, no stationary harvesters will spawn.
+The function "spawn" contains the ID of the spawner in the narrow source's room.
+
+remoteController
+
+remoteSource

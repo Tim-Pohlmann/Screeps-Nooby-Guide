@@ -23,22 +23,13 @@ module.exports = {
 
 			// loop with increasing percentages
 			for (var percentage = 0.0001; percentage <= 1; percentage = percentage + 0.0001){
-				// find a wall with less than percentage hits
-
-				// for some reason this doesn't work
-				// target = creep.pos.findClosestByPath(walls, {
-				//     filter: (s) => s.hits / s.hitsMax < percentage
-				// });
-
-				// so we have to use this
-				target = creep.pos.findClosestByPath(FIND_STRUCTURES, {filter: (s) => s.structureType == STRUCTURE_WALL && s.hits / s.hitsMax < percentage});
+				target = creep.pos.findClosestByPath(FIND_STRUCTURES, {filter: (s) => (s.structureType == STRUCTURE_WALL || s.structureType == STRUCTURE_RAMPART) && s.hits / s.hitsMax < percentage});
 				
 				if (target != undefined) {
 					break;
 				}
 			}
 							
-            //console.log(target);
             // if we find a wall that has to be repaired
             if (target != undefined) {
                 // try to repair it, if not in range

@@ -11,8 +11,12 @@ module.exports = function() {
 			//Look for container with space
 			containers = this.room.find(FIND_STRUCTURES, {filter: (s) => (s.structureType == STRUCTURE_CONTAINER && s.storeCapacity - _.sum(s.store) > 0)});
 		}
+		else if (res == -1) {
+			//Look for container containing anything but energy
+			containers = this.room.find(FIND_STRUCTURES, {filter: (s) => (s.structureType == STRUCTURE_CONTAINER && _.sum(s.store) > 0 && _.sum(s.store[RESOURCE_ENERGY]) != _.sum(s.store))});
+		}
 		else {
-			//Look for container containing a resource
+			//Look for container containing a specific resource
 			containers = this.room.find(FIND_STRUCTURES, {filter: (s) => s.structureType == STRUCTURE_CONTAINER && s.store[res] > 0})			;
 		}
 

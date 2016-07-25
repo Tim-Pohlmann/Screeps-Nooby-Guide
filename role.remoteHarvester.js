@@ -3,9 +3,8 @@ var roleCollector = require('role.collector');
 module.exports = {
     // state working = Returning energy to structure
 
-    run: function(creep) {
+    run: function(creep, remoteSourceFlagOfTheRoom) {
         // if creep is bringing energy to a structure but has no energy left
-
         if (creep.carry.energy == 0) {
 
             // switch state to harvesting
@@ -13,7 +12,6 @@ module.exports = {
         }
         // if creep is harvesting energy but is full
         else if (creep.carry.energy == creep.carryCapacity) {
-            // switch statevar numberOfHarvesters = _.sum(Game.creeps, (c) => c.memory.role == 'harvester');
             creep.memory.working = true;
             delete creep.memory.path;
         }
@@ -21,9 +19,8 @@ module.exports = {
         // if creep is supposed to transfer energy to a structure
         if (creep.memory.working == true) {
             // Find exit to spawn room
-
             var spawn = Game.getObjectById(creep.memory.spawn);
-            if (creep.room.name != spawn.room.name) {
+            if (creep.room.name != creep.memory.homeroom) {
                 //still in new room, go out
 
                 if(!creep.memory.path) {
@@ -40,8 +37,6 @@ module.exports = {
                             filter: (s) => (s.structureType == STRUCTURE_CONTAINER
                             && s.storeCapacity - _.sum(s.store) > 0)});
                 var structure = structures[0];
-
-                //structure = null;
 
                 if (structure == null) {
                     // find closest spawn, extension, tower or container which is not full
@@ -67,18 +62,22 @@ module.exports = {
             }
         }
         // if creep is supposed to harvest energy from source
-        else {
+        else if (remoteSourceFlagOfTheRoom != undefined) {
             // Find exit to target room
             var spawn = Game.getObjectById(creep.memory.spawn);
+            //TODO remoteSource cannot be found by remoteHarvester
+            //var remoteSource = Game.map.find(FIND_FLAGS, {filter: (s) => (s.memory.spawn == spawns[spawn].id) && s.memory.function == "remoteSource"});
+            var remoteSource = Game.flags[remoteSourceFlagOfTheRoom];
 
-            if (creep.room.name == spawn.room.name) {
+            if (creep.room.name != remoteSource.room.name) {
                 //still in old room, go out
+                //TODO RemoteHarvester should be able to travel across rooms
 
                 if(!creep.memory.path) {
-                    creep.memory.path = creep.pos.findPathTo(Game.flags.remoteSource);
+                    creep.memory.path = creep.pos.findPathTo(remoteSource);
                 }
                 if (creep.moveByPath(creep.memory.path) == ERR_NOT_FOUND) {
-                    creep.memory.path = creep.pos.findPathTo(Game.flags.remoteSource);
+                    creep.memory.path = creep.pos.findPathTo(remoteSource);
                     creep.moveByPath(creep.memory.path)
                 }
             }
@@ -92,6 +91,7 @@ module.exports = {
                 else {
                     //Hostiles creeps in new room
                     //TODO: Evading code
+                    roleCollector.run(creep);
                 }
             }
         }

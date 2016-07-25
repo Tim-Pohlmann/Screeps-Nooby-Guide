@@ -62,7 +62,7 @@ StructureSpawn.prototype =
      * @type {function}
      *
      * @param {Array<string>} body An array describing the new creep’s body. Should contain 1 to 50 elements.
-     * @param {string} [name] The name of a new creep. It should be unique creep name, i.e. the Game.creeps object should not contain another creep with the same name (hash key). If not defined, a random name will be generated.
+     * @param {string|undefined|null} [name] The name of a new creep. It should be unique creep name, i.e. the Game.creeps object should not contain another creep with the same name (hash key). If not defined, a random name will be generated.
      *
      *
      * @return {number|OK|ERR_NOT_OWNER|ERR_NAME_EXISTS|ERR_BUSY|ERR_NOT_ENOUGH_ENERGY|ERR_INVALID_ARGS|ERR_RCL_NOT_ENOUGH}
@@ -75,7 +75,7 @@ StructureSpawn.prototype =
      * @type {function}
      *
      * @param {Array<string>} body An array describing the new creep’s body. Should contain 1 to 50 elements.
-     * @param {string} [name] The name of a new creep. It should be unique creep name, i.e. the Game.creeps object should not contain another creep with the same name (hash key). If not defined, a random name will be generated.
+     * @param {string|undefined|null} [name] The name of a new creep. It should be unique creep name, i.e. the Game.creeps object should not contain another creep with the same name (hash key). If not defined, a random name will be generated.
      * @param {*} [memory] The memory of a new creep. If provided, it will be immediately stored into Memory.creeps[name].
      *
      * @return {string|number|ERR_NOT_OWNER|ERR_NAME_EXISTS|ERR_BUSY|ERR_NOT_ENOUGH_ENERGY|ERR_INVALID_ARGS|ERR_RCL_NOT_ENOUGH}
@@ -111,12 +111,14 @@ StructureSpawn.prototype =
     renewCreep: function(target) { },
 
     /**
+     * @deprecated Since version 2016-07-11, replaced by `Creep.withdraw()`.
+     *
      * Transfer the energy from the spawn to a creep.
      *
      * @type {function}
      *
      * @param {Creep} target The creep object which energy should be transferred to.
-     * @param {number} [amount] The amount of energy to be transferred. If omitted, all the remaining amount of energy will be used.
+     * @param {number|undefined|null} [amount] The amount of energy to be transferred. If omitted, all the remaining amount of energy will be used.
      *
      * @return {number|OK|ERR_NOT_OWNER|ERR_NOT_ENOUGH_ENERGY|ERR_INVALID_TARGET|ERR_FULL|ERR_NOT_IN_RANGE}
      */

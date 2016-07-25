@@ -17,6 +17,7 @@ var roleProtector = require('role.protector');
 var roleClaimer = require('role.claimer')
 var roleStationaryHarvester = require('role.stationaryHarvester');
 
+
 var playerUsername = "Pantek59";
 
 module.exports.loop = function () {
@@ -35,6 +36,7 @@ module.exports.loop = function () {
     for (var r in Game.rooms) {
         // Spawn code
         var spawns = Game.rooms[r].find(FIND_MY_SPAWNS);
+
         if (spawns.length == 0) {
             //room has no spawner yet
 
@@ -114,11 +116,11 @@ module.exports.loop = function () {
                     numberOfSources = spawns[spawn].memory.numberOfSources;
                 }
 
-                //Not scaling spawning volumes
+                //Volume defined by flags
                 var minimumNumberOfRemoteHarvesters = 0;
                 var minimumNumberOfClaimers = 0;
                 var minimumNumberOfProtectors = 0;
-                var minimumNumberofStationaryHarvesters = 1;
+                var minimumNumberofStationaryHarvesters = 0;
 
                 //Spawning volumes scaling with # of sources in room
                 var minimumNumberOfHarvesters = Math.ceil(numberOfSources * 1.5);
@@ -127,30 +129,56 @@ module.exports.loop = function () {
                 var minimumNumberOfRepairers = Math.ceil(numberOfSources * 0.5);
                 var minimumNumberOfWallRepairers = Math.ceil(numberOfSources * 0.5);
 
-                var maxNumberOfCreeps = Math.ceil(numberOfSources * 10);
+                // Iterate through all flags
+                for (let name in Game.flags) {
+                    var flag = Game.flags[name];
+                    if (flag.memory.spawn == spawns[spawn].id) {
+                        //flag active for current spawn
+                        switch(flag.memory.function) {
+                            case "remoteSource":
+                                minimumNumberOfRemoteHarvesters = minimumNumberOfRemoteHarvesters + flag.memory.volume;
+                                //console.log(minimumNumberOfRemoteHarvesters);
+                                break;
 
-                // Check for active flag "remoteSource" and "remoteController"
-                // TODO: Check if in neighboring room before spawning creeps for it
-                var remoteSource = Game.flags.remoteSource;
-                var remoteController = Game.flags.remoteController;
+                            case "narrowSource":
+                                minimumNumberofStationaryHarvesters++;
+                                break;
 
-                if (remoteSource == undefined && remoteController == undefined) {
-                    minimumNumberOfProtectors = 0;
+                            case "remoteController":
+                                break;
+
+                            case "protector":
+                                break;
+                        }
+                    }
                 }
-                if (remoteSource == undefined || remoteSource.room.name == spawns[spawn].room.name) {
+
+
+                /* Check for active flag "remoteSource"
+                var remoteSource = Game.rooms[r].find(FIND_FLAGS, {filter: (s) => (s.memory.spawn == spawns[spawn].id) && s.memory.function == "remoteSource"});
+                if (remoteSource.length == 0) {
                     minimumNumberOfRemoteHarvesters = 0;
                 }
-                if (remoteController == undefined) {
+                else {
+                    if (remoteSource[0].memory.volume == undefined) {
+                        remoteSource[0].memory.volume = 0;
+                    }
+                    minimumNumberOfRemoteHarvesters = remoteSource[0].memory.volume;
+                }
+                */
+
+                // Check for active flag "remoteController"
+                var remoteController = Game.rooms[r].find(FIND_FLAGS, {filter: (s) => (s.memory.spawn == spawns[spawn].id) && s.memory.function == "remoteController"});
+                if (remoteController.length == 0) {
                     minimumNumberOfClaimers = 0;
                 }
                 else if (remoteController.room.controller.owner != undefined && remoteController.room.controller.owner.username == Game.rooms[r].controller.owner.username) {
                     //Target room already claimed
                     minimumNumberOfClaimers = 0;
                 }
+                //minimumNumberOfRemoteHarvesters = 0;
 
-                // Check for active flag "narrowSource"
-                var narrowSources = Game.rooms[r].find(FIND_FLAGS, {filter: (s) => (s.memory.spawn == spawns[spawn].id) && s.memory.function == "narrowSource"});
-                minimumNumberofStationaryHarvesters = narrowSources.length;
+                var maxNumberOfCreeps = Math.ceil(numberOfSources * 10);
 
                 var numberOfHarvesters = spawns[spawn].room.find(FIND_MY_CREEPS, {filter: (s) => (s.memory.role == "harvester")});
                 var numberOfStationaryHarvesters = spawns[spawn].room.find(FIND_MY_CREEPS, {filter: (s) => (s.memory.role == "stationaryHarvester")});
@@ -243,7 +271,6 @@ module.exports.loop = function () {
             if(hostiles.length > 0) {
                 var username = hostiles[0].owner.username;
                 Game.notify("Hostile creep " + username + " spotted in room " + Game.rooms[r].name + "!");
-                     
                 towers.forEach(tower => tower.attack(hostiles[0]));
             }
 
@@ -290,8 +317,6 @@ module.exports.loop = function () {
                     // Creep found to pick up dropped energy
                     collector.memory.jobQueueObject = energyID;
                     collector.memory.jobQueueTask = "pickUpEnergy";
-                    //console.log(energyID + ": " + energyAmount + " " + energies[energy].resourceType + " (" + Game.rooms[r] + ": " + energies[energy].pos.x + "/" + energies[energy].pos.y);
-                    //console.log(collector.name);
                     roleJobber.run(collector, "droppedEnergy")
                 }
             }

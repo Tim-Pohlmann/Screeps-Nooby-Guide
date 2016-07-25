@@ -2,10 +2,20 @@ The following info is needed to configure the scripts and play the game. And sin
 
 FLAGS
 -----
+protector
+function: "protector"       //used to spawn a protector creep at the marked position
+spawn: [spawn ID]           //ID of the spawn expected to construct the protector
+volume
+
 narrowSource
-The function "narrowSource" is used to mark energy sources for stationary harvesters. Without such flags, no stationary harvesters will spawn.
-The function "spawn" contains the ID of the spawner in the narrow source's room.
+function: "narrowSource"    //is used to mark energy sources for stationary harvesters. Without such flags, no stationary harvesters will spawn
+spawn: [spawn ID]           //ID of the spawn in the narrow source's room
 
-remoteController
+remoteController (1x / spawn)
+function: "remoteController"    //used to reserve / claim uncontrolled room
+spawn: [spawn ID]           //ID of the spawn expected to construct the protector
 
-remoteSource
+remoteSource (1x / spawn)
+function: "remoteSource"    //used to harvest room from an uncontrolled room
+spawn: [spawn ID]           //ID of the spawn expected to construct the protector
+volume: #harvesters      //number of harvesters planned for this resource

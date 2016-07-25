@@ -1,5 +1,6 @@
 var roleBuilder = require('role.builder');
 var roleCollector = require('role.collector');
+var roleSorter = require('role.sorter');
 
 module.exports = {
     // a function to run the logic for this role
@@ -39,7 +40,7 @@ module.exports = {
         }
         // if creep is supposed to harvest energy from source
         else {
-            roleCollector.run(creep);            
+            roleCollector.run(creep);
         }
     }
 };

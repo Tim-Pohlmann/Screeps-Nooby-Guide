@@ -6,22 +6,21 @@ module.exports = {
     run: function(creep) {
         //Look for vacant source marked as narrowSource
 
-        if (creep.memory.staticX == undefined || creep.memory.staticY == undefined) {
-            var narrowSources = creep.room.find(FIND_FLAGS, {filter: (s) => (s.memory.spawn == creep.memory.spawn && s.memory.function == "narrowSource")});
-            for (var n in narrowSources) {
-                var busyCreeps = creep.room.find(FIND_MY_CREEPS, {filter: (s) => (s.memory.spawn == creep.memory.spawn && s.memory.function == "narrowSource")
-                                                                && s.memory.staticX == narrowSources[n].pos.x && s.memory.staticY == narrowSources[n].pos.y});
-                if(busyCreeps.length == 0) {
-                    //no other stationary harvesters working on this source
-                    creep.memory.staticX = narrowSources[n].pos.x;
-                    creep.memory.staticY = narrowSources[n].pos.y;
-                    break;
-                }
+        var narrowSources = creep.room.find(FIND_FLAGS, {filter: (s) => (s.memory.spawn == creep.memory.spawn && s.memory.function == "narrowSource")});
+        for (var n in narrowSources) {
+            var busyCreeps = creep.room.find(FIND_MY_CREEPS, {filter: (s) => (s.memory.spawn == creep.memory.spawn && s.memory.function == "narrowSource")
+                                                            && s.memory.staticX == narrowSources[n].pos.x && s.memory.staticY == narrowSources[n].pos.y});
+            if(busyCreeps.length == 0) {
+                //no other stationary harvesters working on this source
+                creep.memory.staticX = narrowSources[n].pos.x;
+                creep.memory.staticY = narrowSources[n].pos.y;
+                break;
             }
         }
-
-
-        if (creep.pos.isEqualTo(creep.memory.staticX, creep.memory.staticY)) {
+        if (creep.memory.staticX == undefined || creep.memory.staticY == undefined) {
+            console.log(creep.name + " has no source to stationary harvest.");
+        }
+        else if (creep.pos.isEqualTo(creep.memory.staticX, creep.memory.staticY)) {
             // Harvesting position reached
 
             if (creep.carry.energy < creep.carryCapacity) {

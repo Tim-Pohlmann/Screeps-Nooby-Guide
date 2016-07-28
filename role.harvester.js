@@ -21,13 +21,24 @@ module.exports = {
             
 				
 			// find closest spawn, extension or tower which is not full
-			var structure = creep.pos.findClosestByPath(FIND_MY_STRUCTURES, {
-				filter: (s) => (s.structureType == STRUCTURE_SPAWN
-							 || s.structureType == STRUCTURE_EXTENSION
-							 || s.structureType == STRUCTURE_TOWER)
-							 && s.energy < s.energyCapacity
-			});
-						
+			var numberOfHarvesters = creep.room.find(FIND_MY_CREEPS, {filter: (s) => (s.memory.role == "harvester")});
+			numberOfHarvesters = numberOfHarvesters.length;
+
+			if (numberOfHarvesters < 2) {
+				//only one harvester left, no tower refill
+				var structure = creep.pos.findClosestByPath(FIND_MY_STRUCTURES, {
+						filter: (s) => (s.structureType == STRUCTURE_SPAWN
+					|| s.structureType == STRUCTURE_EXTENSION)
+					&& s.energy < s.energyCapacity});
+			}
+			else {
+				//towers included in energy distribution
+				var structure = creep.pos.findClosestByPath(FIND_MY_STRUCTURES, {
+						filter: (s) => (s.structureType == STRUCTURE_SPAWN
+					|| s.structureType == STRUCTURE_EXTENSION
+					|| s.structureType == STRUCTURE_TOWER)
+					&& s.energy < s.energyCapacity});
+			}
 			// if we found one
 			if (structure != undefined) {			
 

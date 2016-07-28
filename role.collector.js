@@ -14,7 +14,6 @@ module.exports = {
 					// find closest container with space
 					var freeContainerArray = creep.findClosestContainer(0);
 					var freeContainer = freeContainerArray.container;
-					console.log(freeContainer);
 
 					if (creep.transfer(freeContainer, resourceType) == ERR_NOT_IN_RANGE) {
 						creep.moveTo(freeContainer);

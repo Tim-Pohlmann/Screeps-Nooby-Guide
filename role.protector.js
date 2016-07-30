@@ -4,6 +4,20 @@ module.exports = {
     run: function(creep, allies) {
 
         var protectorFlags = _.filter(Game.flags,{ memory: { function: 'protector', spawn: creep.memory.spawn}});
+        var protectorFlag;
+
+        for (var fl in protectorFlags) {
+            //Look for unoccupied remoteController
+            var flagName = protectorFlags[fl].name;
+            creep.memory.protectorFlag = flagName;
+            var busyCreeps = creep.room.find(FIND_MY_CREEPS, {filter: (s) => s.memory.spawn == creep.memory.spawn && s.memory.protectorFlag == flagName});
+            if (busyCreeps.length <= protectorFlags[fl].memory.volume) {
+                //Claimer needed
+                protectorFlag = protectorFlags[fl];
+                creep.memory.protectorFlag = protectorFlag.name;
+                break;
+            }
+        }
 
         if (protectorFlags.length > 0) {
             //TODO More than one protector flag per spawn

@@ -111,7 +111,7 @@ module.exports = function() {
 					body.push(MOVE);  //50
 					body.push(MOVE);  //50
 					size=300;
-					sizelimit = 99;
+					sizelimit = 5;
 					break;
 
 				default:

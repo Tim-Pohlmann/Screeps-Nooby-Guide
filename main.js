@@ -1,6 +1,7 @@
 // import modules
 require('prototype.spawn')();
 require('prototype.creep')();
+
 var roleHarvester = require('role.harvester');
 var roleUpgrader = require('role.upgrader');
 var roleBuilder = require('role.builder');
@@ -12,6 +13,7 @@ var roleProtector = require('role.protector');
 var roleClaimer = require('role.claimer')
 var roleStationaryHarvester = require('role.stationaryHarvester');
 var roleMiner = require('role.miner')
+var moduleSpawner = require('module.spawner');
 
 var playerUsername = "Pantek59";
 var allies = new Array();
@@ -89,191 +91,7 @@ module.exports.loop = function () {
         else {
             // loop through all spawns of the room
             for (var spawn in spawns) {
-                //Code for spawn scaling
-                var numberOfSources;
-                var numberOfMineralSources;
-                var roomMineralType;
-
-                //Check sources of the room
-                if (spawns[spawn].memory.numberOfSources == undefined) {
-                    var sources = spawns[spawn].room.find(FIND_SOURCES);
-                    numberOfSources = sources.length;
-                    spawns[spawn].memory.numberOfSources = numberOfSources;
-                }
-                else {
-                    numberOfSources = spawns[spawn].memory.numberOfSources;
-                }
-
-                //Check extractors of the room
-                if (spawns[spawn].memory.numberOfMinerals == undefined || spawns[spawn].memory.roomMineralType == undefined) {
-                    var minsources = spawns[spawn].room.find(FIND_MY_STRUCTURES, {filter: (s) => (s.structureType == STRUCTURE_EXTRACTOR)});
-                    numberOfMineralSources = minsources.length;
-                    spawns[spawn].memory.numberOfMinerals = numberOfMineralSources;
-                    if (numberOfMineralSources > 0) {
-                        var mineral = spawns[spawn].room.find(FIND_MINERALS, {filter: (s) => (s.mineralAmount > 0)});
-                        roomMineralType = mineral[0].mineralType;
-                        spawns[spawn].memory.roomMineralType = roomMineralType;
-                    }
-                }
-                else {
-                    numberOfMineralSources = spawns[spawn].memory.numberOfMinerals;
-                    roomMineralType = spawns[spawn].memory.roomMineralType;
-                }
-
-                //Volume defined by flags
-                var minimumNumberOfRemoteHarvesters = 0;
-                var minimumNumberOfClaimers = 0;
-                var minimumNumberOfProtectors = 0;
-                var minimumNumberofStationaryHarvesters = 0;
-
-                // Check for protector flags
-                var protectorFlags = _.filter(Game.flags,{ memory: { function: 'protector', spawn: spawns[spawn].id}});
-                for (var p in protectorFlags) {
-                    //Iterate through remote source flags of this spawn
-                    minimumNumberOfProtectors += protectorFlags[p].memory.volume;
-                }
-
-                // Check for remote source flags
-                var remoteSources = _.filter(Game.flags,{ memory: { function: 'remoteSource', spawn: spawns[spawn].id}});
-                for (var t in remoteSources) {
-                    //Iterate through remote source flags of this spawn
-                    minimumNumberOfRemoteHarvesters += remoteSources[t].memory.volume;
-                }
-
-                // Check for narrow source flags
-                var narrowSources = _.filter(Game.flags,{ memory: { function: 'narrowSource', spawn: spawns[spawn].id}});
-                for (var t in narrowSources) {
-                    //Iterate through remote source flags of this spawn
-                    minimumNumberofStationaryHarvesters ++;
-                }
-
-                // Check for active flag "remoteController"
-                var remoteController = _.filter(Game.flags,{ memory: { function: 'remoteController', spawn: spawns[spawn].id}});
-                for (var t in remoteController) {
-                    if (remoteController[t].room != undefined && remoteController[t].room.controller.owner != undefined && remoteController[t].room.controller.owner.username == Game.rooms[r].controller.owner.username) {
-                        //Target room already claimed
-                        minimumNumberOfClaimers = 0;
-                    }
-                    else {
-                        minimumNumberOfClaimers++;
-                    }
-                }
-                //Spawning volumes scaling with # of sources in room
-                var constructionSites = spawns[spawn].room.find(FIND_CONSTRUCTION_SITES);
-                constructionSites = constructionSites.length;
-                var minimumNumberOfBuilders = Math.ceil(numberOfSources * 0.2 * constructionSites);
-                if (minimumNumberOfBuilders > numberOfSources) {
-                    minimumNumberOfBuilders = numberOfSources;
-                }
-
-                if (spawns[spawn].room.controller.level < 4) {
-                    var minimumNumberOfUpgraders = Math.ceil(numberOfSources * 1.0);
-                }
-                else {
-                    var minimumNumberOfUpgraders = Math.ceil(numberOfSources * 0.5);
-                }
-
-                var minimumNumberOfHarvesters = Math.ceil(numberOfSources * 1.5);
-                var minimumNumberOfRepairers = Math.ceil(numberOfSources * 0.5);
-                var minimumNumberOfWallRepairers = Math.ceil(numberOfSources * 0.5);
-                var minimumNumberOfMiners = numberOfMineralSources;
-
-                if (spawns[spawn].room.storage != undefined && spawns[spawn].room.storage.store[roomMineralType] > 250000) {
-                    minimumNumberOfMiners = 0;
-                }
-
-                var maxNumberOfCreeps = numberOfSources * 10;
-
-                // Creeps not leaving room
-                var numberOfHarvesters = spawns[spawn].room.find(FIND_MY_CREEPS, {filter: (s) => (s.memory.role == "harvester")});
-                var numberOfStationaryHarvesters = spawns[spawn].room.find(FIND_MY_CREEPS, {filter: (s) => (s.memory.role == "stationaryHarvester")});
-                var numberOfBuilders = spawns[spawn].room.find(FIND_MY_CREEPS, {filter: (s) => (s.memory.role == "builder")});
-                var numberOfRepairers = spawns[spawn].room.find(FIND_MY_CREEPS, {filter: (s) => (s.memory.role == "repairer")});
-                var numberOfWallRepairers = spawns[spawn].room.find(FIND_MY_CREEPS, {filter: (s) => (s.memory.role == "wallRepairer")});
-                var numberOfMiners = spawns[spawn].room.find(FIND_MY_CREEPS, {filter: (s) => (s.memory.role == "miner")});
-                var numberOfUpgraders = spawns[spawn].room.find(FIND_MY_CREEPS, {filter: (s) => (s.memory.role == "upgrader")});
-
-                //Creeps leaving room
-                var numberOfRemoteHarvesters = _.filter(Game.creeps,{ memory: { role: 'remoteHarvester', spawn: spawns[spawn].id}});
-                var numberOfClaimers = _.filter(Game.creeps,{ memory: { role: 'claimer', spawn: spawns[spawn].id}});
-                var enemyCreeps = spawns[spawn].room.find(FIND_HOSTILE_CREEPS);
-                if (enemyCreeps.length > 0) {
-                    var numberOfProtectors = enemyCreeps.length;
-                }
-                else {
-                    var numberOfProtectors = _.filter(Game.creeps,{ memory: { role: 'protector', spawn: spawns[spawn].id}});
-                    numberOfProtectors = numberOfProtectors.length;
-                }
-
-                numberOfHarvesters = numberOfHarvesters.length;
-                numberOfStationaryHarvesters = numberOfStationaryHarvesters.length;
-                numberOfRemoteHarvesters = numberOfRemoteHarvesters.length;
-                numberOfUpgraders = numberOfUpgraders.length;
-                numberOfBuilders = numberOfBuilders.length;
-                numberOfRepairers = numberOfRepairers.length;
-                numberOfWallRepairers = numberOfWallRepairers.length;
-                numberOfClaimers = numberOfClaimers.length;
-                numberOfMiners = numberOfMiners.length;
-                var energy = spawns[spawn].room.energyCapacityAvailable;
-                var name = undefined;
-                var totalCreeps = _.sum(Game.creeps, (c) => c.memory.spawn == spawns[spawn].id);
-                if (maxNumberOfCreeps > totalCreeps) {
-                    // if not enough harvesters
-                    if (numberOfHarvesters < minimumNumberOfHarvesters) {
-                        // try to spawn one
-
-                        var rolename = 'harvester';
-                        // if spawning failed and we have no harvesters left
-
-                        if (numberOfHarvesters == 0 || spawns[spawn].room.energyCapacityAvailable < 350) {
-                            // spawn one with what is available
-                            var rolename = 'miniharvester';
-                        }
-                    }
-                    else if (numberOfClaimers < minimumNumberOfClaimers) {
-                        var rolename = 'claimer';
-                    }
-                    else if (numberOfProtectors < minimumNumberOfProtectors) {
-                        var rolename = 'protector';
-                    }
-                    else if (numberOfStationaryHarvesters < minimumNumberofStationaryHarvesters) {
-                        var rolename = 'stationaryHarvester';
-                    }
-                    else if (numberOfUpgraders < minimumNumberOfUpgraders) {
-                        var rolename = 'upgrader';
-                    }
-                    else if (numberOfRepairers < minimumNumberOfRepairers) {
-                        var rolename = 'repairer';
-                    }
-                    else if (numberOfBuilders < minimumNumberOfBuilders) {
-                        var rolename = 'builder';
-                    }
-                    else if (numberOfRemoteHarvesters < minimumNumberOfRemoteHarvesters) {
-                        var rolename = 'remoteHarvester';
-                    }
-                    else if (numberOfWallRepairers < minimumNumberOfWallRepairers) {
-                        var rolename = 'wallRepairer';
-                    }
-                    else if (numberOfMiners < minimumNumberOfMiners) {
-                        var rolename = 'miner';
-                    }
-                    else {
-                        var rolename = '---';
-                    }
-
-                    name = spawns[spawn].createCustomCreep(energy, rolename);
-                    // print name to console if spawning was a success
-                    // name > 0 would not work since string > 0 returns false
-                    if (!(name < 0) && rolename != "---") {
-                        console.log("Spawned new creep: " + name + " (" + rolename + ") in room " + Game.rooms[r].name);
-                    }
-                    else {
-                        //console.log("Spawn error (room " + Game.rooms[r] + "): " + name);
-                    }
-                }
-                else {
-                    //console.log("Room " + Game.rooms[r] + " reached max creep level.");
-                }
+                moduleSpawner.run(spawns[spawn]);
             }
         }
 

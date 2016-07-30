@@ -21,7 +21,7 @@ module.exports = {
             }
         }
 
-        if (remoteController != undefined && creep.room.name != remoteController.room.name) {
+        if (remoteController != undefined && remoteController.room != undefined && creep.room.name != remoteController.room.name) {
             //still in wrong room, go out
             if (!creep.memory.path) {
                 creep.memory.path = creep.pos.findPathTo(remoteController);

@@ -14,7 +14,6 @@ module.exports = {
 					// find closest container with space
 					var freeContainerArray = creep.findClosestContainer(0);
 					var freeContainer = freeContainerArray.container;
-					console.log(freeContainer);
 
 					if (creep.transfer(freeContainer, resourceType) == ERR_NOT_IN_RANGE) {
 						creep.moveTo(freeContainer);
@@ -30,9 +29,7 @@ module.exports = {
 			// find closest source
 			var returncode;
 			var container;
-			var source = creep.pos.findClosestByPath(FIND_SOURCES, {filter: (s) => s.energy > 0
-		})
-			;
+			var source = creep.pos.findClosestByPath(FIND_SOURCES, {filter: (s) => s.energy > 0});
 			if (source != null) {
 
 				var sourcepath = creep.pos.findPathTo(source);
@@ -44,10 +41,7 @@ module.exports = {
 
 			// find closest container with energy
 			//container = creep.findClosestContainer(RESOURCE_ENERGY);
-			var containers = creep.room.find(FIND_STRUCTURES, {filter: (s) => s.structureType == STRUCTURE_CONTAINER
-				&& s.store[RESOURCE_ENERGY] > 0
-		})
-			;
+			var containers = creep.room.find(FIND_STRUCTURES, {filter: (s) => s.structureType == STRUCTURE_CONTAINER && s.store[RESOURCE_ENERGY] > 0});
 			var containerdist = 99999;
 			if (containers.length > 0) {
 				for (var i in containers) {
@@ -75,7 +69,7 @@ module.exports = {
 				returncode = creep.harvest(source);
 				pathToSource = sourcepath;
 			}
-
+			var code;
 			switch (returncode) {
 				case (OK):
 
@@ -87,7 +81,7 @@ module.exports = {
 
 				case (ERR_NOT_IN_RANGE):
 					// move towards the source
-					var code = creep.moveTo(source);
+					code = creep.moveTo(source);
 
 					if (code != 0) {
 						switch (code) {
@@ -118,7 +112,7 @@ module.exports = {
 					creep.say(returncode);
 					break;
 			}
-
+			return(returncode);
 		}
 	}
 };

@@ -1,6 +1,5 @@
 var roleBuilder = require('role.builder');
 var roleCollector = require('role.collector');
-var roleSorter = require('role.sorter');
 
 module.exports = {
     // a function to run the logic for this role

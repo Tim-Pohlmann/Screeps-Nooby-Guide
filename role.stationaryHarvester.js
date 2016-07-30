@@ -8,7 +8,7 @@ module.exports = {
 
         var narrowSources = creep.room.find(FIND_FLAGS, {filter: (s) => (s.memory.spawn == creep.memory.spawn && s.memory.function == "narrowSource")});
         for (var n in narrowSources) {
-            var busyCreeps = creep.room.find(FIND_MY_CREEPS, {filter: (s) => (s.memory.spawn == creep.memory.spawn && s.memory.function == "narrowSource")
+            var busyCreeps = creep.room.find(FIND_MY_CREEPS, {filter: (s) => s.memory.spawn == creep.memory.spawn
                                                             && s.memory.staticX == narrowSources[n].pos.x && s.memory.staticY == narrowSources[n].pos.y});
             if(busyCreeps.length == 0) {
                 //no other stationary harvesters working on this source

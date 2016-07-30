@@ -19,11 +19,9 @@ module.exports = function() {
 				case "remoteHarvester":
 					body.push(WORK); //100
 					body.push(CARRY); //50
-					body.push(CARRY); //50
 					body.push(MOVE);  //50
 					body.push(MOVE);  //50
-					body.push(MOVE);  //50
-					size=350;
+					size=250;
 					sizelimit = 99;
 					break;
 				
@@ -93,14 +91,27 @@ module.exports = function() {
 					body.push(MOVE);  //50
 					body.push(MOVE);  //50
 					size=1300;
-					sizelimit = 99;
+					sizelimit = 1;
 					break;
 
 				case "protector":
 					body.push(ATTACK);//100
+					body.push(ATTACK);//100
+					body.push(HEAL);//250
 					body.push(MOVE);  //50
-					size=150;
+					body.push(MOVE);  //50
+					size=550;
 					sizelimit = 8;
+					break;
+
+				case "miner":
+					body.push(WORK); //100
+					body.push(CARRY); //50
+					body.push(CARRY); //50
+					body.push(MOVE);  //50
+					body.push(MOVE);  //50
+					size=300;
+					sizelimit = 99;
 					break;
 
 				default:

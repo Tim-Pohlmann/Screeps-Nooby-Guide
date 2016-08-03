@@ -5,7 +5,7 @@ module.exports = {
     // a function to run the logic for this role
     run: function(creep) {
         // check for home room
-        if (creep.room.name != creep.memory.homeroom) {
+        if (creep.room.name != creep.memory.homeroom && creep.memory.role != "remoteHarvester") {
             //return to home room
             var hometarget = Game.getObjectById(creep.memory.spawn);
             creep.moveTo(hometarget, {reusePath: 10});

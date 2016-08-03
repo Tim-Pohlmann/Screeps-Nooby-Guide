@@ -91,15 +91,16 @@ module.exports = function() {
 					body.push(MOVE);  //50
 					body.push(MOVE);  //50
 					size=1300;
-					sizelimit = 99;
+					sizelimit = 1;
 					break;
 
 				case "protector":
 					body.push(ATTACK);//100
+					body.push(ATTACK);//100
 					body.push(HEAL);//250
 					body.push(MOVE);  //50
 					body.push(MOVE);  //50
-					size=450;
+					size=550;
 					sizelimit = 8;
 					break;
 
@@ -110,7 +111,7 @@ module.exports = function() {
 					body.push(MOVE);  //50
 					body.push(MOVE);  //50
 					size=300;
-					sizelimit = 99;
+					sizelimit = 5;
 					break;
 
 				default:

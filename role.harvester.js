@@ -53,8 +53,14 @@ module.exports = {
 				}					
 			}
 			else {
-				var contArray = creep.findClosestContainer(0);
-				var container = contArray.container;
+				var storage = creep.pos.findClosestByPath(FIND_MY_STRUCTURES, {	filter: (s) => (s.structureType == STRUCTURE_STORAGE) && _.sum(s.store) < s.storeCapacity});
+				if (storage == null) {
+					var contArray = creep.findClosestContainer(0);
+					var container = contArray.container;
+				}
+				else {
+					container = storage;
+				}
 
 				if (creep.transfer(container, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
 					// move towards it

@@ -1,5 +1,5 @@
 var roleCollector = require('role.collector');
-
+var roleBuilder = require('role.builder');
 module.exports = {
     // state working = Returning energy to structure
 
@@ -18,54 +18,66 @@ module.exports = {
 
         // if creep is supposed to transfer energy to a structure
         if (creep.memory.working == true) {
-            // Find exit to spawn room
-            var spawn = Game.getObjectById(creep.memory.spawn);
-            if (creep.room.name != creep.memory.homeroom) {
-                //still in new room, go out
+            //Find construction sites
+            var constructionSites = creep.room.find(FIND_MY_CONSTRUCTION_SITES);
 
-                if(!creep.memory.path) {
-                    creep.memory.path = creep.pos.findPathTo(spawn);
-                }
-                if(creep.moveByPath(creep.memory.path) == ERR_NOT_FOUND) {
-                    creep.memory.path = creep.pos.findPathTo(spawn);
-                    creep.moveByPath(creep.memory.path);
-                }
+            if (constructionSites.length > 0) {
+                // Construction sites found, build them!
+                roleBuilder.run(creep);
             }
             else {
-                // back in spawn room
-                var freeContainerArray = creep.findClosestContainer(0);
-                var structure = freeContainerArray.container;
-                /*
-                var structures = creep.room.find(FIND_STRUCTURES, {
-                            filter: (s) => (s.structureType == STRUCTURE_CONTAINER
-                            && s.storeCapacity - _.sum(s.store) > 0)});
-                var structure = structures[0];
-                */
-                if (structure == null) {
-                    // find closest spawn, extension, tower or container which is not full
-                    structure = creep.pos.findClosestByPath(FIND_MY_STRUCTURES, {
-                            filter: (s) => (s.structureType == STRUCTURE_SPAWN
-                        || s.structureType == STRUCTURE_EXTENSION
-                        || s.structureType == STRUCTURE_TOWER)
-                        && s.energy < s.energyCapacity});
+                var road = creep.pos.lookFor(LOOK_STRUCTURES);
+                if (road[0] != undefined && road[0].hits < road[0].hitsMax && road[0].structureType == STRUCTURE_ROAD) {
+                    // Found road to repair
+                    creep.repair(road[0]);
                 }
+                else {
+                    // Find exit to spawn room
+                    var spawn = Game.getObjectById(creep.memory.spawn);
+                    if (creep.room.name != creep.memory.homeroom) {
+                        //still in new room, go out
 
-                // if we found one
-                if (structure != null) {
-
-                    if (structure.structureType == STRUCTURE_SPAWN && structure.energy == structure.energyCapacity) {
-                        roleUpgrader.run(creep);
+                        if(!creep.memory.path) {
+                            creep.memory.path = creep.pos.findPathTo(spawn);
+                        }
+                        if(creep.moveByPath(creep.memory.path) == ERR_NOT_FOUND) {
+                            creep.memory.path = creep.pos.findPathTo(spawn);
+                            creep.moveByPath(creep.memory.path);
+                        }
                     }
-                    // try to transfer energy, if it is not in range
-                    else if (creep.transfer(structure, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-                        // move towards it
-                        creep.moveTo(structure, {reusePath: 10});
+                    else {
+                        // back in spawn room
+                        var freeContainerArray = creep.findClosestContainer(0);
+                        var structure = freeContainerArray.container;
+
+                        if (structure == null) {
+                            // find closest spawn, extension, tower or container which is not full
+                            structure = creep.pos.findClosestByPath(FIND_MY_STRUCTURES, {
+                                    filter: (s) => (s.structureType == STRUCTURE_SPAWN
+                                || s.structureType == STRUCTURE_EXTENSION
+                                || s.structureType == STRUCTURE_TOWER)
+                                && s.energy < s.energyCapacity});
+                        }
+
+                        // if we found one
+                        if (structure != null) {
+
+                            if (structure.structureType == STRUCTURE_SPAWN && structure.energy == structure.energyCapacity) {
+                                roleUpgrader.run(creep);
+                            }
+                            // try to transfer energy, if it is not in range
+                            else if (creep.transfer(structure, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+                                // move towards it
+                                creep.moveTo(structure, {reusePath: 10});
+                            }
+                        }
                     }
                 }
             }
         }
         // if creep is supposed to harvest energy from source
-        else{
+        else {
+            //TODO Several remote sources per spawn
             //Find remote source
             var remoteSources = _.filter(Game.flags,{ memory: { function: 'remoteSource', spawn: creep.memory.spawn}});
             if (remoteSources.length > 0) {
@@ -74,8 +86,6 @@ module.exports = {
                 // Find exit to target room
                 if (creep.room != remoteSource.room) {
                     //still in old room, go out
-                    //TODO RemoteHarvester should be able to travel across rooms
-
                     if (!creep.memory.path) {
                         creep.memory.path = creep.pos.findPathTo(remoteSource);
                     }
@@ -89,12 +99,29 @@ module.exports = {
                     var hostile = creep.pos.findClosestByRange(FIND_HOSTILE_CREEPS);
                     if (hostile == null) {
                         //No enemy creeps
-                        roleCollector.run(creep);
+                        //console.log(roleCollector.run(creep));
+                        if (roleCollector.run(creep) != OK && creep.pos.getRangeTo(remoteSource) > 6) {
+                            if (!creep.memory.path) {
+                                creep.memory.path = creep.pos.findPathTo(remoteSource);
+                            }
+                            if (creep.moveByPath(creep.memory.path) == ERR_NOT_FOUND) {
+                                creep.memory.path = creep.pos.findPathTo(remoteSource);
+                                creep.moveByPath(creep.memory.path)
+                            }
+                        }
                     }
                     else {
                         //Hostiles creeps in new room
                         //TODO: Evading code
-                        roleCollector.run(creep);
+                        if (roleCollector.run(creep) != OK && creep.pos.getRangeTo(remoteSource) > 6) {
+                            if (!creep.memory.path) {
+                                creep.memory.path = creep.pos.findPathTo(remoteSource);
+                            }
+                            if (creep.moveByPath(creep.memory.path) == ERR_NOT_FOUND) {
+                                creep.memory.path = creep.pos.findPathTo(remoteSource);
+                                creep.moveByPath(creep.memory.path)
+                            }
+                        }
                     }
                 }
             }

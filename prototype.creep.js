@@ -13,7 +13,7 @@ module.exports = function() {
 		}
 		else if (res == -1) {
 			//Look for container containing anything but energy
-			containers = this.room.find(FIND_STRUCTURES, {filter: (s) => (s.structureType == STRUCTURE_CONTAINER && _.sum(s.store) > 0 && _.sum(s.store[RESOURCE_ENERGY]) != _.sum(s.store))});
+			containers = this.room.find(FIND_STRUCTURES, {filter: (s) => (s.structureType == STRUCTURE_CONTAINER && s.store[RESOURCE_ENERGY] < _.sum(s.store))});
 		}
 		else {
 			//Look for container containing a specific resource
@@ -37,6 +37,8 @@ module.exports = function() {
 		containerArray["container"]=container;
 		containerArray["path"]=containerpath;
 		containerArray["distance"]=containerdist;
+
+		//console.log(_.sum(containerArray.container.store));
 		return containerArray;
 	}
 };

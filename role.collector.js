@@ -1,7 +1,7 @@
 module.exports = {
     // a function to run the logic for this role
     run: function(creep) {
-		// check for picked up resources
+		// check for picked up minerals
 		var specialResources = false;
 
 		for (var resourceType in creep.carry) {
@@ -29,9 +29,7 @@ module.exports = {
 			// find closest source
 			var returncode;
 			var container;
-			var source = creep.pos.findClosestByPath(FIND_SOURCES, {filter: (s) => s.energy > 0
-		})
-			;
+			var source = creep.pos.findClosestByPath(FIND_SOURCES, {filter: (s) => s.energy > 0});
 			if (source != null) {
 
 				var sourcepath = creep.pos.findPathTo(source);
@@ -43,10 +41,7 @@ module.exports = {
 
 			// find closest container with energy
 			//container = creep.findClosestContainer(RESOURCE_ENERGY);
-			var containers = creep.room.find(FIND_STRUCTURES, {filter: (s) => s.structureType == STRUCTURE_CONTAINER
-				&& s.store[RESOURCE_ENERGY] > 0
-		})
-			;
+			var containers = creep.room.find(FIND_STRUCTURES, {filter: (s) => (s.structureType == STRUCTURE_CONTAINER && s.store[RESOURCE_ENERGY] > 0) || (s.structureType == STRUCTURE_STORAGE && s.store[RESOURCE_ENERGY] > 0)});
 			var containerdist = 99999;
 			if (containers.length > 0) {
 				for (var i in containers) {
@@ -61,9 +56,10 @@ module.exports = {
 				container = undefined;
 			}
 			var pathToSource;
+			var spawn = Game.getObjectById(creep.memory.spawn);
 
 			// Compare distances to select nearest energy source
-			if (container != undefined && containerdist < sourcedist) {
+			if ((container != undefined && containerdist < sourcedist) && (spawn.room.energyCapacityAvailable > spawn.room.energyAvailable || creep.memory.role != "harvester")) {
 				//transfer from container
 				returncode = creep.withdraw(container, RESOURCE_ENERGY);
 				source = container;
@@ -74,7 +70,7 @@ module.exports = {
 				returncode = creep.harvest(source);
 				pathToSource = sourcepath;
 			}
-
+			var code;
 			switch (returncode) {
 				case (OK):
 
@@ -86,7 +82,7 @@ module.exports = {
 
 				case (ERR_NOT_IN_RANGE):
 					// move towards the source
-					var code = creep.moveTo(source);
+					code = creep.moveTo(source);
 
 					if (code != 0) {
 						switch (code) {
@@ -117,7 +113,7 @@ module.exports = {
 					creep.say(returncode);
 					break;
 			}
-
+			return(returncode);
 		}
 	}
 };

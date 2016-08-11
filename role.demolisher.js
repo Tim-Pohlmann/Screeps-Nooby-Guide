@@ -83,16 +83,12 @@ module.exports = {
 
                         if (demolishFlag.memory.target == "object") {
                             //demolish flag position structures
-                            targetlist = demolishFlag.pos.look();
-
+                            targetlist = demolishFlag.pos.lookFor(LOOK_STRUCTURES);
                             // Go through target list
                             for (var i in targetlist) {
-                                console.log(targetlist);
-                                if (targetlist[i].type == LOOK_STRUCTURES) {
-
+                                if (targetlist[i].structureType != undefined) {
                                     if ((targetlist[i].store != undefined && targetlist[i].store[RESOURCE_ENERGY] > 0) || (targetlist[i].energy != undefined && targetlist[i].energy > 0)) {
                                         //empty structure of energy first
-                                        console.log(creep.withdraw(targetlist[i], RESOURCE_ENERGY));
                                         if (creep.withdraw(targetlist[i], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
                                             creep.moveTo(targetlist[i], {reusePath: 10});
                                         }
@@ -102,6 +98,9 @@ module.exports = {
                                     }
                                     break;
                                 }
+                            }
+                            if (targetlist.length == 0) {
+                                Game.notify("Demolition flag in room " + demolishFlag.pos.roomName + "is placed in empty square!")
                             }
                         }
                         else if (demolishFlag.memory.target == "room") {

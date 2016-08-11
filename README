@@ -15,6 +15,7 @@ remoteController
 function: "remoteController"    //used to reserve / claim uncontrolled room
 spawn: [spawn ID]               //ID of the spawn expected to construct the claimer
 claim: [0 / 1]                  // if 1: controller will be claimed if possible, otherwise only reserved
+supply:                         //Room name where supply creeps should be ordered
 
 remoteSource (1x / spawn)
 function: "remoteSource"    //used to harvest room from an uncontrolled room

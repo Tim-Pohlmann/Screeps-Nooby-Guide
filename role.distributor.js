@@ -10,7 +10,7 @@ module.exports = {
         var resource;
         var comment;
         var energyCost;
-        var info = creep.room.memory.terminaltransfer;
+        var info = creep.room.memory.terminaltransfer; // Format: ROOM:AMOUNT:RESOURCE:COMMENT
         if (info == undefined) {
             roleHarvester.run(creep);
         }
@@ -45,8 +45,8 @@ module.exports = {
                 //creep is supposed to pick stuff up, it's still not full
                 if (terminal.length > 0) {
                     // Terminal exists
-                    //TODO: Pick up incoming stuff from terminal
-                    if (creep.room.memory.terminaltransfer == undefined && _.sum(terminal.store > 0)) {
+                    //TODO: Pick up incoming stuff from terminal (check with active transfer)
+                    if (creep.room.memory.terminaltransfer == undefined && _.sum(terminal.store) > 0) {
                         // No transfer order pending, terminal has material and should be emptied
                         for (var res in terminal.store) {
                             if (terminal.store[res] > 0 && creep.withdraw(terminal, res) == ERR_NOT_IN_RANGE) {

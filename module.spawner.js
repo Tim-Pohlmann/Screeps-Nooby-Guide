@@ -86,7 +86,7 @@ module.exports = {
                 //Target room already claimed
             }
             else {
-                if (remoteController[t].room == undefined || remoteController[t].room.controller == undefined || remoteController[t].room.controller.reservation == undefined || remoteController[t].room.controller.reservation.ticksToEnd < 3000) {
+                if (remoteController[t].room == undefined || remoteController[t].room.controller.reservation == undefined || remoteController[t].room.controller.reservation == undefined || remoteController[t].room.controller.reservation.ticksToEnd < 3000) {
                     minimumSpawnOf.claimer ++;
                 }
             }
@@ -118,7 +118,7 @@ module.exports = {
             minimumSpawnOf.builder = numberOfSources;
         }
 
-        minimumSpawnOf["upgrader"] = Math.ceil(numberOfSources * 0.5);
+        minimumSpawnOf["upgrader"] = Math.ceil(numberOfSources * 1);
         minimumSpawnOf["harvester"] = Math.ceil(numberOfSources * 1.5);
         minimumSpawnOf["repairer"] = Math.ceil(numberOfSources * 0.5);
         minimumSpawnOf["wallRepairer"] = Math.ceil(numberOfSources * 0.5);
@@ -195,11 +195,11 @@ module.exports = {
         else if (numberOf.builder < minimumSpawnOf.builder) {
             var rolename = 'builder';
         }
-        else if (numberOf.demolisher < minimumSpawnOf.demolisher) {
-            var rolename = 'demolisher';
-        }
         else if (numberOf.remoteHarvester < minimumSpawnOf.remoteHarvester) {
             var rolename = 'remoteHarvester';
+        }
+        else if (numberOf.demolisher < minimumSpawnOf.demolisher) {
+            var rolename = 'demolisher';
         }
         else if (numberOf.wallRepairer < minimumSpawnOf.wallRepairer) {
             var rolename = 'wallRepairer';
@@ -217,7 +217,7 @@ module.exports = {
             for (var e in container) {
                 containerEnergie += container[e].store[RESOURCE_ENERGY];
             }
-            if (hostiles == 0 && containerEnergie > spawn.room.energyAvailable * 1.75) {
+            if (hostiles == 0 && hostiles > 0 && containerEnergie > spawn.room.energyAvailable * 1.75) {
                 if (numberOf.upgrader < Math.ceil(minimumSpawnOf.upgrader * 2.5)) {
                     var rolename = 'upgrader';
                 }

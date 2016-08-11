@@ -44,11 +44,11 @@ module.exports = {
 				//console.log(creep.room.energyCapacityAvailable - creep.room.energyAvailable);
 				if (creep.room.energyCapacityAvailable > creep.room.energyAvailable) {
 					//spawn not full, find container or storage if available
-					container = creep.pos.findClosestByPath(FIND_STRUCTURES, {filter: (s) =>(s.structureType == STRUCTURE_LINK && s.energy > 0) || ((s.structureType == STRUCTURE_CONTAINER || s.structureType == STRUCTURE_STORAGE) && s.store[RESOURCE_ENERGY] > 0)});
+					container = creep.pos.findClosestByPath(FIND_STRUCTURES, {filter: (s) =>(s.structureType == STRUCTURE_LINK && s.energy > 0) || ((s.structureType == STRUCTURE_CONTAINER || s.structureType == STRUCTURE_STORAGE || s.structureType == STRUCTURE_TERMINAL) && s.store[RESOURCE_ENERGY] > 0)});
 				}
 				else if (creep.room.storage != undefined && creep.room.storage.storeCapacity - _.sum(creep.room.storage.store > 0)) {
 					//spawn full and storage with space exists or towers need energy
-					container = creep.pos.findClosestByPath(FIND_STRUCTURES, {filter: (s) => (s.structureType == STRUCTURE_LINK && s.energy > 0) || (s.structureType == STRUCTURE_CONTAINER && s.store[RESOURCE_ENERGY] > 0)});
+					container = creep.pos.findClosestByPath(FIND_STRUCTURES, {filter: (s) => (s.structureType == STRUCTURE_LINK && s.energy > 0) || ((s.structureType == STRUCTURE_CONTAINER || s.structureType == STRUCTURE_TERMINAL) && s.store[RESOURCE_ENERGY] > 0)});
 				}
 				else {
 					container = undefined;
@@ -93,7 +93,7 @@ module.exports = {
 
 				// find closest container with energy
 				//container = creep.findClosestContainer(RESOURCE_ENERGY);
-				container = creep.pos.findClosestByPath(FIND_STRUCTURES, {filter: (s) => (s.structureType == STRUCTURE_LINK && s.energy > 0) || (s.structureType == STRUCTURE_CONTAINER && s.store[RESOURCE_ENERGY] > 0) || (s.structureType == STRUCTURE_STORAGE && s.store[RESOURCE_ENERGY] > 0)})
+				container = creep.pos.findClosestByPath(FIND_STRUCTURES, {filter: (s) => (s.structureType == STRUCTURE_LINK && s.energy > 0) || ((s.structureType == STRUCTURE_CONTAINER || s.structureType == STRUCTURE_STORAGE || s.structureType == STRUCTURE_TERMINAL) && s.store[RESOURCE_ENERGY] > 0)});
 
 				var containerdist = 99999;
 				if (container != null) {

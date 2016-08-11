@@ -1,6 +1,7 @@
 // import modules
 require('prototype.spawn')();
 require('prototype.creep')();
+require('prototype.creep.findMyFlag')();
 
 var roleHarvester = require('role.harvester');
 var roleUpgrader = require('role.upgrader');
@@ -57,15 +58,30 @@ module.exports.loop = function () {
             //room has no spawner yet
             if (Game.rooms[r].controller != undefined && Game.rooms[r].controller.owner != undefined && Game.rooms[r].controller.owner.username == playerUsername) {
                 //room is owned and should be updated
+                var claimFlags = _.filter(Game.flags,{ memory: { function: 'remoteController'}});
+                claimFlags = Game.rooms[r].find(FIND_FLAGS, { filter: (s) => s.pos.roomName == Game.rooms[r].name && s.memory.function == "remoteController"});
+
                 var upgraderRecruits = _.filter(Game.creeps,{ memory: { role: 'upgrader', homeroom: Game.rooms[r].name}});
                 if (upgraderRecruits.length < 1) {
                     var roomName;
-                    for (var x in Game.rooms) {
-                        if(Game.rooms[x] != undefined && Game.rooms[x] != Game.rooms[r]){
-                            var newUpgraders = Game.rooms[x].find(FIND_MY_CREEPS, {filter: (s) => (s.memory.role == "upgrader")});
-                            if (newUpgraders.length > 0) {
-                                var targetCreep = newUpgraders[0];
-                                roomName=Game.rooms[x].name;
+
+                    if (claimFlags.length > 0) {
+                        //Claimer present, read homeroom
+                        var newUpgraders = _.filter(Game.creeps,{ memory: { role: 'upgrader', homeroom: claimFlags[0].memory.supply}});
+
+                        if (newUpgraders.length > 0) {
+                            var targetCreep = newUpgraders[0];
+                            roomName=claimFlags[0].memory.supply;
+                        }
+                    }
+                    else {
+                        for (var x in Game.rooms) {
+                            if(Game.rooms[x] != undefined && Game.rooms[x] != Game.rooms[r]){
+                                var newUpgraders = Game.rooms[x].find(FIND_MY_CREEPS, {filter: (s) => (s.memory.role == "upgrader")});
+                                if (newUpgraders.length > 0) {
+                                    var targetCreep = newUpgraders[0];
+                                    roomName=Game.rooms[x].name;
+                                }
                             }
                         }
                     }
@@ -73,29 +89,37 @@ module.exports.loop = function () {
                     if (targetCreep != undefined) {
                         targetCreep.memory.homeroom = Game.rooms[r].name;
                         targetCreep.memory.spawn =  Game.rooms[r].controller.id;
-                        console.log(targetCreep.name + " has been captured as an upgrader by room " + Game.rooms[r].name + ".");
+                        console.log(targetCreep.name + " has been captured in room " + targetCreep.pos.roomName + " as an upgrader by room " + Game.rooms[r].name + ".");
                         targetCreep = undefined;
                     }
                 }
 
                 var BuilderRecruits = _.filter(Game.creeps,{ memory: { role: 'repairer', homeroom: Game.rooms[r].name}});
                 if (BuilderRecruits.length < 1) {
-
                     var roomName;
-                    for (var x in Game.rooms) {
-                        if(Game.rooms[x] != undefined && Game.rooms[x] != Game.rooms[r]){
-                            var newBuilders = Game.rooms[x].find(FIND_MY_CREEPS, {filter: (s) => (s.memory.role == "repairer")});
-                            if (newBuilders.length > 0) {
-                                var targetCreepBuilder = newBuilders[0];
-                                roomName=Game.rooms[x].name;
+                    if (claimFlags.length > 0) {
+                        //Claimer present, read homeroom
+                        var newBuilders = _.filter(Game.creeps,{ memory: { role: 'repairer', homeroom: claimFlags[0].memory.supply}});
+                        if (newBuilders.length > 0) {
+                            var targetCreepBuilder = newBuilders[0];
+                            roomName=claimFlags[0].memory.supply;
+                        }
+                    }
+                    else {
+                        for (var x in Game.rooms) {
+                            if(Game.rooms[x] != undefined && Game.rooms[x] != Game.rooms[r]){
+                                var newBuilders = Game.rooms[x].find(FIND_MY_CREEPS, {filter: (s) => (s.memory.role == "repairer")});
+                                if (newBuilders.length > 0) {
+                                    var targetCreepBuilder = newBuilders[0];
+                                    roomName=Game.rooms[x].name;
+                                }
                             }
                         }
                     }
-
                     if (targetCreepBuilder != undefined) {
                         targetCreepBuilder.memory.homeroom = Game.rooms[r].name;
                         targetCreepBuilder.memory.spawn =  Game.rooms[r].controller.id;
-                        console.log(targetCreepBuilder.name + " has been captured as a repairer by room " + Game.rooms[r].name + ".");
+                        console.log(targetCreepBuilder.name + " has been captured in room " + targetCreepBuilder.pos.roomName + " as a repairer by room " + Game.rooms[r].name + ".");
                     }
                 }
 
@@ -123,7 +147,7 @@ module.exports.loop = function () {
             for (var h in hostiles) {
                 HealBodyParts = 0;
                 for (var part in hostiles[h].body) {
-                    if(hostiles[h].body[part].type == "heal") {
+                    if (hostiles[h].body[part].type == "heal") {
                         //Healing body part found
                         HealBodyParts++;
                     }
@@ -135,91 +159,91 @@ module.exports.loop = function () {
                 }
             }
 
-            if(hostiles.length > 0) {
+            if (hostiles.length > 0) {
                 if (healingInvader != undefined) {
                     hostiles[0] = Game.getObjectById(healingInvader);
                 }
                 var username = hostiles[0].owner.username;
                 if (allies.indexOf(username) == -1) {
-                    console.log ("Hostile creep " + username + " spotted in room " + Game.rooms[r].name + "!");
+                    console.log("Hostile creep " + username + " spotted in room " + Game.rooms[r].name + "!");
                     towers.forEach(tower => tower.attack(hostiles[0]));
                 }
             }
 
             // Tower healing code
-            var wounded = Game.rooms[r].find(FIND_MY_CREEPS, { filter: (s) => s.hits < s.hitsMax});
+            var wounded = Game.rooms[r].find(FIND_MY_CREEPS, {filter: (s) => s.hits < s.hitsMax});
 
-            if (wounded.length >0) {
+            if (wounded.length > 0) {
                 towers[tower].heal(wounded[0]);
             }
 
             // Tower repairing code
             if (towers[tower].energy / towers[tower].energyCapacity > 0.8) {
-                var damage = Game.rooms[r].find(FIND_MY_STRUCTURES,{
-                    filter: (s) => s.hits < s.hitsMax && s.structureType != STRUCTURE_WALL && s.structureType != STRUCTURE_RAMPART });
+                var damage = Game.rooms[r].find(FIND_MY_STRUCTURES, { filter: (s) => s.hits < s.hitsMax && s.structureType != STRUCTURE_WALL && s.structureType != STRUCTURE_RAMPART});
 
                 if (damage.length > 0) {
                     towers[tower].repair(damage[0]);
                 }
             }
+        }
+        // Search for dropped energy
+        var energies=Game.rooms[r].find(FIND_DROPPED_ENERGY);
+        for (energy in energies) {
+            var energyID = energies[energy].id;
+            var energyAmount = energies[energy].amount;
 
-            // Search for dropped energy
-            var energies=Game.rooms[r].find(FIND_DROPPED_ENERGY);
-            for (energy in energies) {
-                var energyID = energies[energy].id;
-                var energyAmount = energies[energy].amount;
+            if (energyAmount > 5 && Game.rooms[r].memory.hostiles == 0) {
+                var collector = energies[energy].pos.findClosestByPath(FIND_MY_CREEPS, {
+                        filter: (s) => (s.carryCapacity - _.sum(s.carry) - energyAmount) >= 0
+                    && s.memory.role != "stationaryHarvester"});
 
-                if (energyAmount > 5 && Game.rooms[r].memory.hostiles == 0) {
-                    var collector = energies[energy].pos.findClosestByPath(FIND_MY_CREEPS, {
-                            filter: (s) => (s.carryCapacity - _.sum(s.carry) - energyAmount) >= 0
+                if (collector == null) {
+                    collector = energies[energy].pos.findClosestByPath(FIND_MY_CREEPS, {
+                            filter: (s) => (s.carryCapacity - _.sum(s.carry)) > 0
                         && s.memory.role != "stationaryHarvester"});
-
-                    if (collector == null) {
-                        collector = energies[energy].pos.findClosestByPath(FIND_MY_CREEPS, {
-                                filter: (s) => (s.carryCapacity - _.sum(s.carry)) > 0
-                            && s.memory.role != "stationaryHarvester"});
-                    }
-
-                    if (collector != null) {
-                        // Creep found to pick up dropped energy
-                        collector.memory.jobQueueObject = energyID;
-                        collector.memory.jobQueueTask = "pickUpEnergy";
-
-                        roleJobber.run(collector, "droppedEnergy")
-                    }
-                    //console.log(collector.name + " is picking up dropped energy (" + energyAmount + ") in room " + energies[energy].room);
                 }
+
+                if (collector != null) {
+                    // Creep found to pick up dropped energy
+                    collector.memory.jobQueueObject = energyID;
+                    collector.memory.jobQueueTask = "pickUpEnergy";
+
+                    roleJobber.run(collector, "droppedEnergy")
+                }
+                //console.log(collector.name + " is picking up dropped energy (" + energyAmount + ") in room " + energies[energy].room);
             }
+        }
 
-            // Terminal code
-            if (Game.rooms[r].memory.terminaltransfer != undefined) {
-                var terminal = Game.rooms[r].terminal;
+        // Link code        var TempLinks = Game.rooms[r].find(FIND_MY_STRUCTURES,{filter: (s) => (s.structureType == STRUCTURE_LINK)});
 
-                if (terminal != undefined) {
-                    //Terminal exists
-                    var targetRoom;
-                    var amount;
-                    var resource;
-                    var comment;
-                    var energyCost;
-                    var info = Game.rooms[r].memory.terminaltransfer;
-                    info.split(":");
-                    targetRoom = info[0];
-                    amount = info[1];
-                    resource = info[2];
-                    comment = info[3];
+        // Terminal code (Atavus: W21S38)
+        if (Game.rooms[r].memory.terminaltransfer != undefined) {
+            var terminal = Game.rooms[r].terminal;
 
-                    //TODO Terminal handling
-                    energyCost = Game.market.calcTransactionCost(amount, terminal.room.name, targetRoom.name);
+            if (terminal != undefined) {
+                //Terminal exists
+                var targetRoom;
+                var amount;
+                var resource;
+                var comment;
+                var energyCost;
+                var info = Game.rooms[r].memory.terminaltransfer;
+                info.split(":");
+                targetRoom = info[0];
+                amount = info[1];
+                resource = info[2];
+                comment = info[3];
 
-                    if (terminal.store[resource] >= amount && terminal.store[RESOURCE_ENERGY] >= energyCost) {
-                        // Amount to be transferred reached and enough energy available -> GO!
-                        if (terminal.send(resource,amount,targetRoom,comment) == OK) {
-                            delete Game.rooms[r].memory.terminaltransfer;
-                        }
-                        else {
-                            console.log("Terminal transfer error: " + terminal.send(resource,amount,targetRoom,comment));
-                        }
+                //TODO Terminal handling
+                energyCost = Game.market.calcTransactionCost(amount, terminal.room.name, targetRoom.name);
+
+                if (terminal.store[resource] >= amount && terminal.store[RESOURCE_ENERGY] >= energyCost) {
+                    // Amount to be transferred reached and enough energy available -> GO!
+                    if (terminal.send(resource,amount,targetRoom,comment) == OK) {
+                        delete Game.rooms[r].memory.terminaltransfer;
+                    }
+                    else {
+                        console.log("Terminal transfer error: " + terminal.send(resource,amount,targetRoom,comment));
                     }
                 }
             }

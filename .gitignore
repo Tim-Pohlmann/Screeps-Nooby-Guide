@@ -50,4 +50,3 @@ fabric.properties
 .csync_journal.db-wal
 .gitignore
 .idea/
-.owncloudsync.log

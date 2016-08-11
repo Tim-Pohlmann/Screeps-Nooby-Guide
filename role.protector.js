@@ -10,9 +10,9 @@ module.exports = {
             //Look for unoccupied remoteController
             var flagName = protectorFlags[fl].name;
             creep.memory.protectorFlag = flagName;
-            var busyCreeps = creep.room.find(FIND_MY_CREEPS, {filter: (s) => s.memory.spawn == creep.memory.spawn && s.memory.protectorFlag == flagName});
+            var busyCreeps = _.filter(Game.creeps,{ memory: { protectorFlag: flagName, spawn: creep.memory.spawn}});
             if (busyCreeps.length <= protectorFlags[fl].memory.volume) {
-                //Claimer needed
+                //Protector needed
                 protectorFlag = protectorFlags[fl];
                 creep.memory.protectorFlag = protectorFlag.name;
                 break;
@@ -53,18 +53,11 @@ module.exports = {
                 }
             }
         }
-        else if (wounded != null){
-            //wounded creeps present in room
-            if(creep.heal(wounded) == ERR_NOT_IN_RANGE) {
-                creep.moveTo(wounded);
-            }
-        }
 
         if (protectorFlags.length > 0) {
             //Move to flag if not there
             var range = creep.pos.getRangeTo(protectorFlag);
             if (range > 5) {
-                //TODO: More than one protector flag per spawn
                 if (!creep.memory.path) {
                     creep.memory.path = creep.pos.findPathTo(protectorFlag);
                 }

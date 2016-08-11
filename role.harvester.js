@@ -18,39 +18,26 @@ module.exports = {
 
         // if creep is supposed to transfer energy to a structure
         if (creep.memory.working == true) {
-            
-				
 			// find closest spawn, extension or tower which is not full
 			var numberOfHarvesters = creep.room.find(FIND_MY_CREEPS, {filter: (s) => (s.memory.role == "harvester")});
 			numberOfHarvesters = numberOfHarvesters.length;
+			var structure;
 
 			if (numberOfHarvesters < 2) {
 				//only one harvester left, no tower refill
-				var structure = creep.pos.findClosestByPath(FIND_MY_STRUCTURES, {
-						filter: (s) => (s.structureType == STRUCTURE_SPAWN
-					|| s.structureType == STRUCTURE_EXTENSION)
-					&& s.energy < s.energyCapacity});
+				structure = creep.pos.findClosestByPath(FIND_MY_STRUCTURES, { filter: (s) => (s.structureType == STRUCTURE_SPAWN || s.structureType == STRUCTURE_EXTENSION)	&& s.energy < s.energyCapacity});
 			}
 			else {
 				//towers included in energy distribution
-				var structure = creep.pos.findClosestByPath(FIND_MY_STRUCTURES, {
-						filter: (s) => (s.structureType == STRUCTURE_SPAWN
-					|| s.structureType == STRUCTURE_EXTENSION
-					|| s.structureType == STRUCTURE_TOWER)
-					&& s.energy < s.energyCapacity});
+				structure = creep.pos.findClosestByPath(FIND_MY_STRUCTURES, { filter: (s) => (s.structureType == STRUCTURE_SPAWN || s.structureType == STRUCTURE_EXTENSION || s.structureType == STRUCTURE_TOWER) && s.energy < s.energyCapacity});
 			}
 			// if we found one
-			if (structure != undefined) {			
-
-				if (structure.structureType == STRUCTURE_SPAWN && structure.energy == structure.energyCapacity) {
-					roleUpgrader.run(creep);
-				}					
+			if (structure != undefined) {
 				// try to transfer energy, if it is not in range
-				else if (creep.transfer(structure, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+				if (creep.transfer(structure, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
 					// move towards it
-					creep.moveTo(structure, {reusePath: 5});
-
-				}					
+					creep.moveTo(structure, {reusePath: 3});
+				}
 			}
 			else {
 				var storage = creep.pos.findClosestByPath(FIND_MY_STRUCTURES, {	filter: (s) => (s.structureType == STRUCTURE_STORAGE) && _.sum(s.store) < s.storeCapacity});
@@ -70,7 +57,7 @@ module.exports = {
 		}
         // if creep is supposed to harvest energy from source
         else {
-        	roleCollector.run(creep);        	
+        	roleCollector.run(creep);
         }
     }
 };

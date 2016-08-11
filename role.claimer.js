@@ -4,6 +4,8 @@ var roleUpgrader = require('role.upgrader');
 module.exports = {
     // a function to run the logic for this role
     run: function(creep) {
+        //TODO Evade code
+
         // Find exit to target room
         var spawn = Game.getObjectById(creep.memory.spawn);
         var remoteControllers = _.filter(Game.flags,{ memory: { function: 'remoteController', spawn: creep.memory.spawn}});
@@ -12,17 +14,18 @@ module.exports = {
 
         if (creep.memory.remoteControllerFlag != undefined) {
             //Check whether claiming this flag is this OK
-            busyCreeps = creep.room.find(FIND_MY_CREEPS, {filter: (s) => s.memory.spawn == creep.memory.spawn && s.memory.remoteControllerFlag == creep.memory.remoteControllerFlag});
+            busyCreeps = _.filter(Game.creeps,{ memory: { remoteControllerFlag: creep.memory.remoteControllerFlag, spawn: creep.memory.spawn}});
         }
 
         if (creep.memory.remoteControllerFlag == undefined || (creep.memory.remoteControllerFlag != undefined && busyCreeps.length != 1)) {
-            //Flag taken, chose other flag
+            //Flag taken, choose other flag
             for (var rem in remoteControllers) {
                 //Look for unoccupied remoteController
                 var flagName = remoteControllers[rem].name;
                 creep.memory.remoteControllerFlag = remoteControllers[rem].name;
-                busyCreeps = creep.room.find(FIND_MY_CREEPS, {filter: (s) => s.memory.spawn == creep.memory.spawn && s.memory.remoteControllerFlag == flagName});
-                if (busyCreeps.length == 1) {
+                busyCreeps = _.filter(Game.creeps,{ memory: { remoteControllerFlag: flagName, spawn: creep.memory.spawn}});
+
+                if (busyCreeps.length == 1 && (remoteControllers[rem].room == undefined || remoteControllers[rem].room.controller.reservation.ticksToEnd < 3000)) {
                     //No other claimer working on this flag
                     remoteController = remoteControllers[rem];
                     creep.memory.remoteControllerFlag = remoteController.name;

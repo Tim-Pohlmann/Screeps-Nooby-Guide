@@ -24,21 +24,34 @@ module.exports = {
 
             // if creep is supposed to repair something
             if (creep.memory.working == true) {
-                // find closest structure with less than max hits, exclude walls
-                var structure = creep.pos.findClosestByPath(FIND_STRUCTURES, { filter: (s) => (s.hits < s.hitsMax && s.structureType != STRUCTURE_WALL && s.structureType != STRUCTURE_RAMPART) || (s.structureType == STRUCTURE_RAMPART && s.hits / s.hitsMax < 0.03)});
-
-                // if we find one
-                if (structure != undefined) {
-                    // try to repair it, if it is out of range
-                    if (creep.repair(structure) == ERR_NOT_IN_RANGE) {
-                        // move towards it
-                        creep.moveTo(structure, {reusePath: 5});
+                if (creep.room.memory.hostiles > 0) {
+                    // Hostiles present in room
+                    var tower = creep.pos.findClosestByPath(FIND_MY_STRUCTURES, { filter: (s) => s.structureType == STRUCTURE_TOWER && s.energy < s.energyCapacity});
+                    if (tower != null) {
+                        // Tower needing energy found
+                        if (creep.transfer(tower, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+                            // move towards it
+                            creep.moveTo(tower, {reusePath: 5});
+                        }
                     }
                 }
-                // if we can't fine one
                 else {
-                    // look for construction sites
-                    roleBuilder.run(creep);
+                    // find closest structure with less than max hits, exclude walls
+                        var structure = creep.pos.findClosestByPath(FIND_STRUCTURES, {filter: (s) => (s.hits < s.hitsMax && s.structureType != STRUCTURE_WALL && s.structureType != STRUCTURE_RAMPART) || (s.structureType == STRUCTURE_RAMPART && s.hits / s.hitsMax < 0.03)});
+
+                    // if we find one
+                    if (structure != undefined) {
+                        // try to repair it, if it is out of range
+                        if (creep.repair(structure) == ERR_NOT_IN_RANGE) {
+                            // move towards it
+                            creep.moveTo(structure, {reusePath: 5});
+                        }
+                    }
+                    // if we can't fine one
+                    else {
+                        // look for construction sites
+                        roleBuilder.run(creep);
+                    }
                 }
             }
             // if creep is supposed to harvest energy from source

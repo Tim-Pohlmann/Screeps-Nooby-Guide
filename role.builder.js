@@ -11,7 +11,6 @@ module.exports = {
             creep.moveTo(hometarget, {reusePath: 10});
         }
         else {
-
             // if creep is trying to complete a constructionSite but has no energy left
             if (creep.carry.energy == 0) {
                 // switch state
@@ -25,20 +24,37 @@ module.exports = {
 
             // if creep is supposed to complete a constructionSite
             if (creep.memory.working == true) {
-                // find closest constructionSite
-                var constructionSite = creep.pos.findClosestByPath(FIND_CONSTRUCTION_SITES);
-                // if one is found
-                if (constructionSite != undefined) {
-                    // try to build, if the constructionSite is not in range
-                    if (creep.build(constructionSite) == ERR_NOT_IN_RANGE) {
-                        // move towards the constructionSite
-                        creep.moveTo(constructionSite, {reusePath: 5});
+                if (creep.room.memory.hostiles > 0) {
+                    // Hostiles present in room
+                    var tower = creep.pos.findClosestByPath(FIND_MY_STRUCTURES, { filter: (s) => s.structureType == STRUCTURE_TOWER && s.energy < s.energyCapacity});
+                    if (tower != null) {
+                        // Tower needing energy found
+                        if (creep.transfer(tower, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+                            // move towards it
+                            creep.moveTo(tower, {reusePath: 5});
+                        }
                     }
                 }
-                // if no constructionSite is found
                 else {
-                    // go upgrading the controller
-                    roleUpgrader.run(creep);
+                    // find closest constructionSite
+                    var constructionSite = creep.pos.findClosestByPath(FIND_MY_CONSTRUCTION_SITES, {filter: (s) => s.structureType == STRUCTURE_SPAWN});
+                    if (constructionSite == null) {
+                        constructionSite = creep.pos.findClosestByPath(FIND_CONSTRUCTION_SITES, {filter: (s) => s.structureType != STRUCTURE_RAMPART});
+                    }
+
+                    // if one is found
+                    if (constructionSite != undefined) {
+                        // try to build, if the constructionSite is not in range
+                        if (creep.build(constructionSite) == ERR_NOT_IN_RANGE) {
+                            // move towards the constructionSite
+                            creep.moveTo(constructionSite, {reusePath: 5});
+                        }
+                    }
+                    // if no constructionSite is found
+                    else {
+                        // go upgrading the controller
+                        roleUpgrader.run(creep);
+                    }
                 }
             }
             // if creep is supposed to harvest energy from source

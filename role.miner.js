@@ -51,7 +51,6 @@ module.exports = {
 			//creep is supposed to harvest minerals from source or containers
 			var containerArray = creep.findClosestContainer(-1);
 			var containerResource;
-			//console.log(containerArray.container);
 			if (containerArray.container != undefined && storage != null) {
 				//minerals waiting in containers
 				//analyzing storage of container

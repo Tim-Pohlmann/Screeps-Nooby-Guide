@@ -17,32 +17,37 @@ module.exports = {
 
         // if creep is supposed to repair something
         if (creep.memory.working == true) {
-			
-			var walls = creep.room.find(FIND_STRUCTURES, { filter: (s) => s.structureType == STRUCTURE_WALL || s.structureType == STRUCTURE_RAMPART});
-			var target = undefined;
-
-			// loop with increasing percentages
-			for (var percentage = 0.0001; percentage <= 1; percentage = percentage + 0.0001){
-				target = creep.pos.findClosestByPath(FIND_STRUCTURES, {filter: (s) => (s.structureType == STRUCTURE_WALL || s.structureType == STRUCTURE_RAMPART) && s.hits / s.hitsMax < percentage});
-				
-				if (target != undefined) {
-					break;
-				}
-			}
-							
-            // if we find a wall that has to be repaired
-            if (target != undefined) {
-                // try to repair it, if not in range
-                if (creep.repair(target) == ERR_NOT_IN_RANGE) {
-                    // move towards it
-                    creep.moveTo(target, {reusePath: 5});
-                }				
-
+            var constructionSite = creep.pos.findClosestByPath(FIND_CONSTRUCTION_SITES, { filter: (s) => s.structureType == STRUCTURE_WALL});
+            if (constructionSite != null) {
+                // Construction sites found
+                if (creep.build(constructionSite) == ERR_NOT_IN_RANGE) {
+                    // move towards the constructionSite
+                    creep.moveTo(constructionSite, {reusePath: 5});
+                }
             }
-            // if we can't fine one
             else {
-                // look for construction sites
-                roleBuilder.run(creep);
+                var target = undefined;
+                // loop with increasing percentages
+                for (var percentage = 0.0001; percentage <= 1; percentage = percentage + 0.0001) {
+                    target = creep.pos.findClosestByPath(FIND_STRUCTURES, {filter: (s) => (s.structureType == STRUCTURE_WALL || s.structureType == STRUCTURE_RAMPART) && s.hits / s.hitsMax < percentage});
+                    if (target != undefined) {
+                        break;
+                    }
+                }
+
+                // if we find a wall that has to be repaired
+                if (target != undefined) {
+                    // try to repair it, if not in range
+                    if (creep.repair(target) == ERR_NOT_IN_RANGE) {
+                        // move towards it
+                        creep.moveTo(target, {reusePath: 5});
+                    }
+                }
+                // if we can't fine one
+                else {
+                    // look for construction sites
+                    roleBuilder.run(creep);
+                }
             }
         }
         // if creep is supposed to harvest energy from source

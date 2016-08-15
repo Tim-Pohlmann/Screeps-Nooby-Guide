@@ -51,7 +51,7 @@ module.exports = {
                     }
 
                     // if one is found
-                    if (constructionSite != undefined) {
+                    if (constructionSite != null) {
                         // try to build, if the constructionSite is not in range
                         if (creep.build(constructionSite) == ERR_NOT_IN_RANGE) {
                             // move towards the constructionSite

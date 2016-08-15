@@ -35,5 +35,5 @@ role: [0 / 1 / x]           // 0: spawn acts as slave spawn and does not use own
 ROOM
 ----
 hostiles                // # of hostile creeps is saved here
-terminal                // Terminal transfer order in the following format: [TARGETROOM]:[AMOUNT]:[RESOURCESTRING]:[COMMENT] e.g. W45S19:800:Z:Test transfer
+terminaltransfer        // Terminal transfer order in the following format: [TARGETROOM]:[AMOUNT]:[RESOURCESTRING]:[COMMENT] e.g. W45S19:800:Z:Test transfer
                         // Transfer is automatically deleted from room memory after execution

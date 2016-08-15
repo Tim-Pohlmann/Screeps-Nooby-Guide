@@ -9,15 +9,15 @@ module.exports = function() {
 
 		if (res == 0) {
 			//Look for container with space
-			containers = this.room.find(FIND_STRUCTURES, {filter: (s) => (s.structureType == STRUCTURE_CONTAINER && s.storeCapacity - _.sum(s.store) > 0)});
+			containers = this.room.find(FIND_STRUCTURES, {filter: (s) => ((s.structureType == STRUCTURE_CONTAINER) && s.storeCapacity - _.sum(s.store) > 0)});
 		}
 		else if (res == -1) {
 			//Look for container containing anything but energy
-			containers = this.room.find(FIND_STRUCTURES, {filter: (s) => (s.structureType == STRUCTURE_CONTAINER && s.store[RESOURCE_ENERGY] < _.sum(s.store))});
+			containers = this.room.find(FIND_STRUCTURES, {filter: (s) => s.structureType == STRUCTURE_CONTAINER && s.store[RESOURCE_ENERGY] < _.sum(s.store)});
 		}
 		else {
 			//Look for container containing a specific resource
-			containers = this.room.find(FIND_STRUCTURES, {filter: (s) => s.structureType == STRUCTURE_CONTAINER && s.store[res] > 0})			;
+			containers = this.room.find(FIND_STRUCTURES, {filter: (s) => (s.structureType == STRUCTURE_CONTAINER) && s.store[res] > 0})			;
 		}
 
 		containerdist = 99999;
@@ -38,7 +38,6 @@ module.exports = function() {
 		containerArray["path"]=containerpath;
 		containerArray["distance"]=containerdist;
 
-		//console.log(_.sum(containerArray.container.store));
 		return containerArray;
 	}
 };

@@ -23,8 +23,8 @@ module.exports = {
 			numberOfHarvesters = numberOfHarvesters.length;
 			var structure;
 
-			if (numberOfHarvesters < 2) {
-				//only one harvester left, no tower refill
+			if (numberOfHarvesters < 2 || (creep.room.memory.hostiles > 0 && creep.room.find(FIND_MY_CREEPS, {filter: (s) => (s.memory.role == "protector")}).length == 0)) {
+				//no tower refill
 				structure = creep.pos.findClosestByPath(FIND_MY_STRUCTURES, { filter: (s) => (s.structureType == STRUCTURE_SPAWN || s.structureType == STRUCTURE_EXTENSION)	&& s.energy < s.energyCapacity});
 			}
 			else {
@@ -51,7 +51,7 @@ module.exports = {
 
 				if (creep.transfer(container, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
 					// move towards it
-					creep.moveTo(container, {reusePath: 5});
+					creep.moveTo(container, {reusePath: 3});
 				}
 			}
 		}

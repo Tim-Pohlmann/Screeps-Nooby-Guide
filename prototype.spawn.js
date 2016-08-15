@@ -22,7 +22,7 @@ module.exports = function() {
 					body.push(MOVE);  //50
 					body.push(MOVE);  //50
 					size=250;
-					sizelimit = 7;
+					sizelimit = 10;
 					break;
 				
 				case "harvester":
@@ -30,7 +30,8 @@ module.exports = function() {
 					body.push(WORK); //100
 					body.push(CARRY); //50
 					body.push(MOVE);  //50
-					size=300;
+                    body.push(MOVE);  //50
+					size=350;
 					sizelimit = 8;
 					break;
 
@@ -99,11 +100,9 @@ module.exports = function() {
 					body.push(ATTACK);//100
 					body.push(MOVE);  //50
 					body.push(MOVE);  //50
-					body.push(TOUGH); //10
-					body.push(TOUGH); //10
-					body.push(TOUGH); //10
-					size=330;
-					sizelimit = 6;
+                    body.push(MOVE);  //50
+					size=350;
+					sizelimit = 10;
 					break;
 
 				case "miner":
@@ -113,17 +112,16 @@ module.exports = function() {
 					body.push(MOVE);  //50
 					body.push(MOVE);  //50
 					size=300;
-					sizelimit = 10;
+					sizelimit = 5;
 					break;
 
                 case "distributor":
-                    body.push(WORK); //100
                     body.push(CARRY); //50
                     body.push(CARRY); //50
                     body.push(MOVE);  //50
                     body.push(MOVE);  //50
-                    size=300;
-                    sizelimit = 10;
+                    size=200;
+                    sizelimit = 5;
                     break;
 
                 case "demolisher":

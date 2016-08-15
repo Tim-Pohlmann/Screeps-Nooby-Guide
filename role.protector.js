@@ -2,7 +2,6 @@
 module.exports = {
     // a function to run the logic for this role
     run: function(creep, allies) {
-
         var protectorFlags = _.filter(Game.flags,{ memory: { function: 'protector', spawn: creep.memory.spawn}});
         var protectorFlag;
 
@@ -59,10 +58,10 @@ module.exports = {
             var range = creep.pos.getRangeTo(protectorFlag);
             if (range > 5) {
                 if (!creep.memory.path) {
-                    creep.memory.path = creep.pos.findPathTo(protectorFlag);
+                    creep.memory.path = creep.pos.findPathTo(protectorFlag, {ignoreCreeps: true});
                 }
                 if (creep.moveByPath(creep.memory.path) == ERR_NOT_FOUND) {
-                    creep.memory.path = creep.pos.findPathTo(protectorFlag);
+                    creep.memory.path = creep.pos.findPathTo(protectorFlag, {ignoreCreeps: true});
                     creep.moveByPath(creep.memory.path);
                 }
             }

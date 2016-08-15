@@ -1,6 +1,6 @@
 // import modules
 require('prototype.spawn')();
-require('prototype.creep')();
+require('prototype.creep.findClosestContainer')();
 require('prototype.creep.findMyFlag')();
 
 var roleHarvester = require('role.harvester');
@@ -27,7 +27,8 @@ allies.push("BlackLotus");
 allies.push("shedletsky");
 
 module.exports.loop = function () {
-    
+    //PathFinder.use(isEnabled);
+
 	// check for memory entries of died creeps by iterating over Memory.creeps
     for (var name in Memory.creeps) {
         // and checking if the creep is still alive
@@ -50,6 +51,10 @@ module.exports.loop = function () {
             if (allies.indexOf(enemies[cr].owner.username) == -1) {
                 Game.rooms[r].memory.hostiles++;
             }
+        }
+
+        if (Game.rooms[r].memory.terminalEnergyCost == undefined) {
+            Game.rooms[r].memory.terminalEnergyCost = 0;
         }
 
         // Spawn code
@@ -129,7 +134,7 @@ module.exports.loop = function () {
             // loop through all spawns of the room
             for (var spawn in spawns) {
                 if (spawns[spawn].memory.spawnRole != "x") {
-                    moduleSpawner.run(spawns[spawn]);
+                    moduleSpawner.run(spawns[spawn], allies);
                 }
             }
         }
@@ -194,13 +199,11 @@ module.exports.loop = function () {
 
             if (energyAmount > 5 && Game.rooms[r].memory.hostiles == 0) {
                 var collector = energies[energy].pos.findClosestByPath(FIND_MY_CREEPS, {
-                        filter: (s) => (s.carryCapacity - _.sum(s.carry) - energyAmount) >= 0
-                    && s.memory.role != "stationaryHarvester"});
+                        filter: (s) => (s.carryCapacity - _.sum(s.carry) - energyAmount) >= 0});
 
                 if (collector == null) {
                     collector = energies[energy].pos.findClosestByPath(FIND_MY_CREEPS, {
-                            filter: (s) => (s.carryCapacity - _.sum(s.carry)) > 0
-                        && s.memory.role != "stationaryHarvester"});
+                            filter: (s) => (s.carryCapacity - _.sum(s.carry)) > 0});
                 }
 
                 if (collector != null) {
@@ -214,12 +217,39 @@ module.exports.loop = function () {
             }
         }
 
-        // Link code        var TempLinks = Game.rooms[r].find(FIND_MY_STRUCTURES,{filter: (s) => (s.structureType == STRUCTURE_LINK)});
+        // Link code
+        var RoomLinks = Game.rooms[r].find(FIND_MY_STRUCTURES,{filter: (s) => (s.structureType == STRUCTURE_LINK)});
+        var targetLevel = 0;
+        var minLevel = 99;
+        var minLink;
+        var maxLevel = -1;
+        var maxLink;
 
-        // Terminal code (Atavus: W21S38)
-        if (Game.rooms[r].memory.terminaltransfer != undefined) {
+        for (var link in RoomLinks) {
+            targetLevel += RoomLinks[link].energy;
+        }
+        targetLevel = Math.ceil(targetLevel / RoomLinks.length / 100); //Targetlevel is now 0 - 8
+
+        if (targetLevel != null) {
+            for (var link in RoomLinks) {
+                if (Math.ceil(RoomLinks[link].energy / 100) < targetLevel && Math.ceil(RoomLinks[link].energy / 100) < minLevel) {
+                    minLevel = Math.ceil(RoomLinks[link].energy / 100);
+                    minLink = RoomLinks[link];
+                }
+                else if (Math.ceil(RoomLinks[link].energy / 100) > targetLevel && Math.ceil(RoomLinks[link].energy / 100) > maxLevel) {
+                    maxLevel = Math.ceil(RoomLinks[link].energy / 100);
+                    maxLink = RoomLinks[link];
+                }
+            }
+            if (maxLink != undefined && maxLink.cooldown == 0 && maxLevel != minLevel && RoomLinks.length > 0) {
+                maxLink.transferEnergy(minLink, (maxLevel - targetLevel) * 100);
+            }
+        }
+
+        // Terminal code
+
+        if (Game.rooms[r].memory.terminalTransfer != undefined) {
             var terminal = Game.rooms[r].terminal;
-
             if (terminal != undefined) {
                 //Terminal exists
                 var targetRoom;
@@ -227,20 +257,23 @@ module.exports.loop = function () {
                 var resource;
                 var comment;
                 var energyCost;
-                var info = Game.rooms[r].memory.terminaltransfer;
-                info.split(":");
+                var info = Game.rooms[r].memory.terminalTransfer;
+                info = info.split(":");
                 targetRoom = info[0];
                 amount = info[1];
                 resource = info[2];
                 comment = info[3];
 
-                //TODO Terminal handling
-                energyCost = Game.market.calcTransactionCost(amount, terminal.room.name, targetRoom.name);
+                energyCost = Game.market.calcTransactionCost(amount, terminal.room.name, targetRoom);
+                Game.rooms[r].memory.terminalEnergyCost = energyCost;
 
                 if (terminal.store[resource] >= amount && terminal.store[RESOURCE_ENERGY] >= energyCost) {
                     // Amount to be transferred reached and enough energy available -> GO!
                     if (terminal.send(resource,amount,targetRoom,comment) == OK) {
-                        delete Game.rooms[r].memory.terminaltransfer;
+                        delete Game.rooms[r].memory.terminalTransfer;
+                        delete Game.rooms[r].memory.terminalEnergyCost;
+                        console.log(amount + " " + resource + " has been transferred to room " + targetRoom + ": " + comment);
+                        Game.notify(amount + " " + resource + " has been transferred to room " + targetRoom + ": " + comment);
                     }
                     else {
                         console.log("Terminal transfer error: " + terminal.send(resource,amount,targetRoom,comment));

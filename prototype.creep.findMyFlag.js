@@ -14,7 +14,7 @@ module.exports = function() {
 
         if (this.memory.currentFlag != undefined) {
             // There is a current flag
-            flag = Game.flags[currentFlag];
+            flag = Game.flags[this.memory.currentFlag];
             if (flag == undefined) {
                 volume = 0;
             }
@@ -34,7 +34,6 @@ module.exports = function() {
         for (var flag in flagList) {
             this.memory.currentFlag = flagList[flag].name;
             flagCreeps = _.filter(Game.creeps,{memory: { currentFlag: this.memory.currentFlag }});
-            console.log(flagCreeps);
             if (flagFunction == "narrowSource") {
                 // static volumes
                 volume = 1;
@@ -42,11 +41,11 @@ module.exports = function() {
             else {
                 volume = flagList[flag].memory.volume;
             }
-            console.log(flagCreeps.length + "/" + volume);
             if (flagCreeps.length <= volume) {
                 //only one stationaryHarvester on this flag -> OK
                 return this.memory.currentFlag;
             }
         }
+        return -1;
     }
 };

@@ -33,19 +33,14 @@ module.exports = {
 			break;
 
 			case (ERR_NOT_IN_RANGE):
-				// move towards the source				
-
-				if (creep.memory.role == "test") {
-					var nearestCreep = creep.pos.findClosestByPath(FIND_MY_CREEPS, {filter: (s) => s.name != creep.name});
-					var pathToCreep = creep.pos.findPathTo(nearestCreep);
-					var pathToSource = creep.pos.findPathTo(source);
-					code = 0;
-				}
+				// move towards the source
+                if (creep.memory.role != "stationaryHarvester") {
+                    var code = creep.moveTo(source, {reusePath: 3});
+                }
 				else {
-					var code = creep.moveTo(source);
-				}
-				
-								
+				    var code = 0;
+                }
+
 				switch (code) {
 					case -11:
 						//creep.say("Tired");

@@ -1,10 +1,6 @@
-var allies = new Array();
-allies[0] = "king_lispi";
-allies[1] = "Tanjera";
-
 module.exports = {
     // state working = Returning minerals to structure
-    run: function (spawn) {
+    run: function (spawn, allies) {
         if (spawn.room.controller.owner == undefined || (spawn.room.controller.owner != undefined && spawn.owner.username != spawn.room.controller.owner.username)) {
             //Spawner standing in room not controlled by player
             return -1;
@@ -106,16 +102,16 @@ module.exports = {
                 progress += constructionSites[w].progress;
                 totalProgress += constructionSites[w].progressTotal;
             }
-            if (totalProgress - progress < 1001) {
+            if (totalProgress - progress < 301) {
                 minimumSpawnOf.builder = 0;
             }
             else {
-                minimumSpawnOf.builder = Math.ceil((totalProgress - progress) / 10000);
+                minimumSpawnOf.builder = Math.ceil((totalProgress - progress) / 5000);
             }
         }
 
         if (minimumSpawnOf.builder > numberOfSources * 2){
-            minimumSpawnOf.builder = numberOfSources;
+            minimumSpawnOf.builder = numberOfSources * 2;
         }
 
         minimumSpawnOf["upgrader"] = Math.ceil(numberOfSources * 1);
@@ -145,7 +141,7 @@ module.exports = {
                 minimumSpawnOf.distributor = 0;
             }
         }
-        //console.log(spawn.room.name + ": " + minimumSpawnOf.claimer);
+
         var numberOf = new Array();
         // Creeps not leaving room
         numberOf["harvester"] = spawn.room.find(FIND_MY_CREEPS, {filter: (s) => (s.memory.role == "harvester")}).length;
@@ -186,6 +182,9 @@ module.exports = {
         else if (numberOf.stationaryHarvester < minimumSpawnOf.stationaryHarvester) {
             var rolename = 'stationaryHarvester';
         }
+        else if (numberOf.distributor < minimumSpawnOf.distributor) {
+            var rolename = 'distributor';
+        }
         else if (numberOf.upgrader < minimumSpawnOf.upgrader) {
             var rolename = 'upgrader';
         }
@@ -194,6 +193,9 @@ module.exports = {
         }
         else if (numberOf.builder < minimumSpawnOf.builder) {
             var rolename = 'builder';
+        }
+        else if (numberOf.miner < minimumSpawnOf.miner) {
+            var rolename = 'miner';
         }
         else if (numberOf.remoteHarvester < minimumSpawnOf.remoteHarvester) {
             var rolename = 'remoteHarvester';
@@ -204,12 +206,6 @@ module.exports = {
         else if (numberOf.wallRepairer < minimumSpawnOf.wallRepairer) {
             var rolename = 'wallRepairer';
         }
-        else if (numberOf.distributor < minimumSpawnOf.distributor) {
-            var rolename = 'distributor';
-        }
-        else if (numberOf.miner < minimumSpawnOf.miner) {
-            var rolename = 'miner';
-        }
         else {
             var container = spawn.room.find(FIND_STRUCTURES, {filter: (s) => s.structureType == STRUCTURE_CONTAINER || s.structureType == STRUCTURE_STORAGE});
             var containerEnergie = 0;
@@ -217,7 +213,7 @@ module.exports = {
             for (var e in container) {
                 containerEnergie += container[e].store[RESOURCE_ENERGY];
             }
-            if (hostiles == 0 && hostiles > 0 && containerEnergie > spawn.room.energyAvailable * 1.75) {
+            if (hostiles == 0 && containerEnergie > spawn.room.energyAvailable * 1.75) {
                 if (numberOf.upgrader < Math.ceil(minimumSpawnOf.upgrader * 2.5)) {
                     var rolename = 'upgrader';
                 }

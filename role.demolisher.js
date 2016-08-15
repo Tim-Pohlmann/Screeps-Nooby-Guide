@@ -100,7 +100,7 @@ module.exports = {
                                 }
                             }
                             if (targetlist.length == 0) {
-                                Game.notify("Demolition flag in room " + demolishFlag.pos.roomName + "is placed in empty square!")
+                                Game.notify("Demolition flag in room " + demolishFlag.pos.roomName + " is placed in empty square!")
                             }
                         }
                         else if (demolishFlag.memory.target == "room") {
@@ -118,7 +118,7 @@ module.exports = {
                                         creep.moveTo(target, {reusePath: 10});
                                     }
                                     else {
-                                        console.log(creep.withdraw(target, RESOURCE_ENERGY));
+                                        creep.withdraw(target, RESOURCE_ENERGY);
                                     }
                                 }
                                 else if (creep.dismantle(target) == ERR_NOT_IN_RANGE) {

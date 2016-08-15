@@ -24,7 +24,7 @@ module.exports = {
                 creep.memory.remoteControllerFlag = remoteControllers[rem].name;
                 busyCreeps = _.filter(Game.creeps,{ memory: { remoteControllerFlag: flagName, spawn: creep.memory.spawn}});
 
-                if (busyCreeps.length == 1 && (remoteControllers[rem].room == undefined || remoteControllers[rem].room.controller.reservation.ticksToEnd < 3000)) {
+                if (busyCreeps.length == 1 && (remoteControllers[rem].room == undefined || remoteControllers[rem].room.controller.reservation == undefined|| remoteControllers[rem].room.controller.reservation.ticksToEnd < 3000)) {
                     //No other claimer working on this flag
                     remoteController = remoteControllers[rem];
                     creep.memory.remoteControllerFlag = remoteController.name;
@@ -54,9 +54,6 @@ module.exports = {
 
             if (creep.room.memory.hostiles == 0) {
                 // try to claim the controller
-                if (creep.room.controller.owner != undefined && creep.room.controller.owner.username == spawn.room.controller.owner.username) {
-                    //TODO: If controller is already owned flag should be automatically removed
-                }
                 if (remoteController.memory.claim == 1) {
                     var returncode = creep.claimController(creep.room.controller);
                 }

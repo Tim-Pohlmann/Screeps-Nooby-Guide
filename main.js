@@ -18,9 +18,9 @@ var roleDistributor = require("role.distributor");
 var roleDemolisher = require('role.demolisher');
 var moduleSpawner = require('module.spawner');
 
-var playerUsername = "Pantek59";
+var playerUsername = "king_lispi";
 var allies = new Array();
-allies.push("king_lispi");
+allies.push("Pantek59");
 allies.push("Tanjera");
 allies.push("Atavus");
 allies.push("BlackLotus");

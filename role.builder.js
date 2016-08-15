@@ -37,9 +37,14 @@ module.exports = {
                 }
                 else {
                     // find closest constructionSite
-                    var constructionSite = creep.pos.findClosestByPath(FIND_MY_CONSTRUCTION_SITES, {filter: (s) => s.structureType == STRUCTURE_SPAWN});
-                    if (constructionSite == null) {
-                        constructionSite = creep.pos.findClosestByPath(FIND_MY_CONSTRUCTION_SITES, {filter: (s) => s.structureType == STRUCTURE_EXTENSION});
+                    var arrayStructures=[STRUCTURE_SPAWN,STRUCTURE_EXTENSION,STRUCTURE_ROAD];
+                    var constructionSite=null;
+                    for (iStruct=0;iStruct<arrayStructures.length;iStruct++){
+                        if(constructionSite==null){
+                            constructionSite = creep.pos.findClosestByPath(FIND_MY_CONSTRUCTION_SITES, {filter: (s) => s.structureType == arrayStructures[iStruct]});
+                        }else{
+                            break;
+                        }
                     }
                     if (constructionSite == null) {
                         constructionSite = creep.pos.findClosestByPath(FIND_CONSTRUCTION_SITES, {filter: (s) => s.structureType != STRUCTURE_RAMPART});

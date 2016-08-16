@@ -1,5 +1,6 @@
 var roleBuilder = require('role.builder');
 var roleCollector = require('role.collector');
+var roleUpgrader = require('role.upgrader');
 
 module.exports = {
     // a function to run the logic for this role
@@ -25,7 +26,9 @@ module.exports = {
                     creep.moveTo(constructionSite, {reusePath: 5});
                 }
             }
-            else {/*
+            else {
+                roleUpgrader.run(creep);
+                /*
                 var target = undefined;
                 // loop with increasing percentages
                 for (var percentage = 0.1; percentage <= 1; percentage = percentage + 0.1) {

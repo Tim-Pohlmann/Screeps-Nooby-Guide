@@ -17,7 +17,7 @@ module.exports = {
 
         // if creep is supposed to repair something
         if (creep.memory.working == true) {
-            var constructionSite = creep.pos.findClosestByPath(FIND_CONSTRUCTION_SITES, { filter: (s) => s.structureType == STRUCTURE_WALL || s.structureType == STRUCTURE_RAMPART});
+            var constructionSite = creep.pos.findClosestByPath(FIND_CONSTRUCTION_SITES, { filter: (s) => (s.structureType == STRUCTURE_WALL && s.structure.hits < 20000) || (s.structureType == STRUCTURE_RAMPART && s.structureType.hits < 20000)});
             if (constructionSite != null) {
                 // Construction sites found
                 if (creep.build(constructionSite) == ERR_NOT_IN_RANGE) {
@@ -25,10 +25,10 @@ module.exports = {
                     creep.moveTo(constructionSite, {reusePath: 5});
                 }
             }
-            else {
+            else {/*
                 var target = undefined;
                 // loop with increasing percentages
-                for (var percentage = 0.0001; percentage <= 1; percentage = percentage + 0.0001) {
+                for (var percentage = 0.1; percentage <= 1; percentage = percentage + 0.1) {
                     target = creep.pos.findClosestByPath(FIND_STRUCTURES, {filter: (s) => (s.structureType == STRUCTURE_WALL || s.structureType == STRUCTURE_RAMPART) && s.hits / s.hitsMax < percentage});
                     if (target != undefined) {
                         break;
@@ -47,7 +47,7 @@ module.exports = {
                 else {
                     // look for construction sites
                     roleBuilder.run(creep);
-                }
+                }*/
             }
         }
         // if creep is supposed to harvest energy from source

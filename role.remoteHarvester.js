@@ -100,7 +100,7 @@ module.exports = {
                     if (!creep.memory.path) {
                         creep.memory.path = creep.pos.findPathTo(remoteSource, {ignoreCreeps: false});
                     }
-                    if (creep.moveByPath(creep.memory.path) == ERR_NOT_FOUND) {
+                    if (creep.moveByPath(creep.memory.path) != OK) {
                         creep.memory.path = creep.pos.findPathTo(remoteSource, {ignoreCreeps: false});
                         creep.moveByPath(creep.memory.path)
                     }

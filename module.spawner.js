@@ -1,10 +1,11 @@
 module.exports = {
     // state working = Returning minerals to structure
     run: function (spawn, allies) {
-        if (spawn.room.controller.owner == undefined || (spawn.room.controller.owner != undefined && spawn.owner.username != spawn.room.controller.owner.username)) {
+        if (spawn.spawning != null || spawn.room.controller.owner == undefined || (spawn.room.controller.owner != undefined && spawn.owner.username != spawn.room.controller.owner.username)) {
             //Spawner standing in room not controlled by player
             return -1;
         }
+
         var realspawn;
 
         //Code for spawn scaling
@@ -191,14 +192,14 @@ module.exports = {
         else if (numberOf.repairer < minimumSpawnOf.repairer) {
             var rolename = 'repairer';
         }
-        else if (numberOf.builder < minimumSpawnOf.builder) {
-            var rolename = 'builder';
-        }
         else if (numberOf.miner < minimumSpawnOf.miner) {
             var rolename = 'miner';
         }
         else if (numberOf.remoteHarvester < minimumSpawnOf.remoteHarvester) {
             var rolename = 'remoteHarvester';
+        }
+        else if (numberOf.builder < minimumSpawnOf.builder) {
+            var rolename = 'builder';
         }
         else if (numberOf.demolisher < minimumSpawnOf.demolisher) {
             var rolename = 'demolisher';

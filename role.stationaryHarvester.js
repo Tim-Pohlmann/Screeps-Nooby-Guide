@@ -12,8 +12,8 @@ module.exports = {
                 creep.memory.currentFlag = creep.findMyFlag("narrowSource");
             }
 
-            if (creep.memory.currentFlag == undefined) {
-                //console.log(creep.name + " has no source to stationary harvest in room " + creep.room.name + ".");
+            if (creep.memory.currentFlag == undefined && creep.memory.currentFlag == -1) {
+                console.log(creep.name + " has no source to stationary harvest in room " + creep.room.name + ".");
             }
             else {
                 var flag = Game.flags[creep.memory.currentFlag];
@@ -55,7 +55,7 @@ module.exports = {
                         }
                     }
                 }
-                else {
+                else if (flag != undefined) {
                     // Move to harvesting point
                     if (!creep.memory.path) {
                         creep.memory.path = creep.pos.findPathTo(flag);
@@ -64,6 +64,10 @@ module.exports = {
                         creep.memory.path = creep.pos.findPathTo(flag);
                         creep.moveByPath(creep.memory.path);
                     }
+                }
+                else {
+                    console.log(creep.name + " in room " + creep.room.name + " has a problem.");
+                    //creep.suicide();
                 }
             }
         }

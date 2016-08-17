@@ -1,7 +1,11 @@
-// import modules
+const delayPathfinding = 2;
+const delayRoomScanning = 10;
+const RESOURCE_SPACE = "space";
+
 require('prototype.spawn')();
 require('prototype.creep.findClosestContainer')();
 require('prototype.creep.findMyFlag')();
+require('prototype.creep.findResource')();
 
 var roleHarvester = require('role.harvester');
 var roleUpgrader = require('role.upgrader');
@@ -55,6 +59,97 @@ module.exports.loop = function () {
 
         if (Game.rooms[r].memory.terminalEnergyCost == undefined) {
             Game.rooms[r].memory.terminalEnergyCost = 0;
+        }
+
+        // Preload room structure (will be executed every few ticks)
+        var searchresult;
+
+        if (Game.rooms[r].memory.resourceTicker == undefined || Game.rooms[r].memory.resourceTicker == 0 || Game.rooms[r].memory.resourceTicker < Game.time - delayRoomScanning) {
+            Game.rooms[r].memory.resourceTicker = Game.time;
+
+            if (Game.rooms[r].memory.roomArraySources == undefined) {
+                var sourceIDs = new Array();
+                searchResult = Game.rooms[r].find(FIND_SOURCES);
+                for (let s in searchResult) {
+                    sourceIDs.push(searchResult[s].id);
+                }
+                Game.rooms[r].memory.roomArraySources = sourceIDs;
+            }
+
+            if (Game.rooms[r].memory.roomArrayMinerals == undefined) {
+                var sourceIDs = new Array();
+                searchResult = Game.rooms[r].find(FIND_MINERALS);
+                for (let s in searchResult) {
+                    sourceIDs.push(searchResult[s].id);
+                }
+                Game.rooms[r].memory.roomArrayMinerals = sourceIDs;
+            }
+
+            var containerIDs = new Array();
+            searchResult = Game.rooms[r].find(FIND_STRUCTURES, {filter: (s) => s.structureType == STRUCTURE_CONTAINER});
+            for (let s in searchResult) {
+                containerIDs.push(searchResult[s].id);
+            }
+            Game.rooms[r].memory.roomArrayContainers = containerIDs;
+
+            var spawnIDs = new Array();
+            searchResult = Game.rooms[r].find(FIND_MY_STRUCTURES, {filter: (s) => s.structureType == STRUCTURE_SPAWN});
+            for (let s in searchResult) {
+                spawnIDs.push(searchResult[s].id);
+            }
+            Game.rooms[r].memory.roomArraySpawns = spawnIDs;
+
+            var extensionIDs = new Array();
+            searchResult = Game.rooms[r].find(FIND_MY_STRUCTURES, {filter: (s) => s.structureType == STRUCTURE_EXTENSION});
+            for (let s in searchResult) {
+                extensionIDs.push(searchResult[s].id);
+            }
+            Game.rooms[r].memory.roomArrayExtensions = extensionIDs;
+
+            var LinkIDs = new Array();
+            searchResult = Game.rooms[r].find(FIND_MY_STRUCTURES, {filter: (s) => s.structureType == STRUCTURE_LINK});
+            for (let s in searchResult) {
+                LinkIDs.push(searchResult[s].id);
+            }
+            Game.rooms[r].memory.roomArrayLinks = LinkIDs;
+
+            var LabIDs = new Array();
+            searchResult = Game.rooms[r].find(FIND_MY_STRUCTURES, {filter: (s) => s.structureType == STRUCTURE_LAB});
+            for (let s in searchResult) {
+                LabIDs.push(searchResult[s].id);
+            }
+            Game.rooms[r].memory.roomArrayLabs = LabIDs;
+
+            var ExtensionIDs = new Array();
+            searchResult = Game.rooms[r].find(FIND_MY_STRUCTURES, {filter: (s) => s.structureType == STRUCTURE_EXTRACTOR});
+            for (let s in searchResult) {
+                ExtensionIDs.push(searchResult[s].id);
+            }
+            Game.rooms[r].memory.roomArrayExtractors = ExtensionIDs;
+
+            var rampartIDs = new Array();
+            searchResult = Game.rooms[r].find(FIND_MY_STRUCTURES, {filter: (s) => s.structureType == STRUCTURE_RAMPART});
+            for (let s in searchResult) {
+                rampartIDs.push(searchResult[s].id);
+            }
+            Game.rooms[r].memory.roomArrayRamparts = rampartIDs;
+
+            var towerIDs = new Array();
+            searchResult = Game.rooms[r].find(FIND_MY_STRUCTURES, {filter: (s) => s.structureType == STRUCTURE_TOWER});
+            for (let s in searchResult) {
+                towerIDs.push(searchResult[s].id);
+            }
+
+            Game.rooms[r].memory.roomArrayTowers = towerIDs;
+
+            if (Game.rooms[r].memory.roomArrayConstructionSites == undefined) {
+                var constructionIDs = new Array();
+                searchResult = Game.rooms[r].find(FIND_MY_CONSTRUCTION_SITES);
+                for (let s in searchResult) {
+                    constructionIDs.push(searchResult[s].id);
+                }
+                Game.rooms[r].memory.roomArrayConstructionSites = constructionIDs;
+            }
         }
 
         // Spawn code

@@ -1,3 +1,6 @@
+const delayPathfinding = 2;
+const RESOURCE_SPACE = "space";
+
 module.exports = {
     // a function to run the logic for this role
     run: function(creep) {
@@ -6,18 +9,16 @@ module.exports = {
 
 		for (var resourceType in creep.carry) {
 			switch (resourceType) {
-				case "energy":
+				case RESOURCE_ENERGY:
 					break;
 
 				default:
 					// find closest container with space to get rid of minerals
-					var freeContainerArray = creep.findClosestContainer(0);
-					var freeContainer = freeContainerArray.container;
+                    var freeContainer = creep.findResource(RESOURCE_SPACE);
 
 					if (creep.transfer(freeContainer, resourceType) == ERR_NOT_IN_RANGE) {
-						creep.moveTo(freeContainer);
+						creep.moveTo(freeContainer, {reusePath: delayPathfinding});
 					}
-
 					specialResources = true;
 					break;
 			}
@@ -25,173 +26,61 @@ module.exports = {
 
 		if (specialResources == false) {
             if (creep.memory.statusHarvesting == undefined || creep.memory.statusHarvesting == false) {
+                var container;
                 if (creep.memory.role == "harvester") {
-                    // find closest source
-                    var container;
-                    var sourcepath;
-                    var sourcedist;
-
-                    var source = creep.pos.findClosestByPath(FIND_SOURCES, {filter: (s) => s.energy > 0});
-                    if (source != null) {
-
-                        sourcepath = creep.pos.findPathTo(source);
-                        sourcedist = sourcepath.length;
-                    }
-                    else {
-                        sourcedist = 99999;
-                    }
-
                     // find closest container with energy
                     if (creep.room.energyCapacityAvailable > creep.room.energyAvailable) {
-                    //spawn not full, find container or storage if available
-                        container = creep.pos.findClosestByPath(FIND_STRUCTURES, {filter: (s) => (s.structureType == STRUCTURE_LINK && s.energy > 0) || ((s.structureType == STRUCTURE_CONTAINER || s.structureType == STRUCTURE_STORAGE) && s.store[RESOURCE_ENERGY] > 0)});
+                    //spawn not full, find source, container or storage if available
+                        container = creep.findResource(RESOURCE_ENERGY,FIND_SOURCES, STRUCTURE_LINK,STRUCTURE_CONTAINER, STRUCTURE_STORAGE);
                     }
                     else if (creep.room.storage != undefined && creep.room.storage.storeCapacity - _.sum(creep.room.storage.store > 0)) {
                     //spawn full and storage with space exists or towers need energy
-                        container = creep.pos.findClosestByPath(FIND_STRUCTURES, {filter: (s) => (s.structureType == STRUCTURE_LINK && s.energy > 0) || ((s.structureType == STRUCTURE_CONTAINER) && s.store[RESOURCE_ENERGY] > 0)});
+                        container = creep.findResource(RESOURCE_ENERGY, FIND_SOURCES, STRUCTURE_LINK, STRUCTURE_CONTAINER);
                     }
                     else {
-                        container = undefined;
+                        container = creep.findResource(RESOURCE_ENERGY, FIND_SOURCES, STRUCTURE_LINK);
                     }
-
-                    var containerdist = 99999;
-                    if (container != undefined) {
-                        var containerpath = creep.pos.findPathTo(container);
-                        if (containerpath.length < containerdist) {
-                            containerdist = containerpath.length;
-                        }
+                    //console.log(creep.name + ": " + container.ticksToRegeneration);
+                    if (container == undefined) {
+                        //console.log(creep.name + "(" + creep.room.name + "): no resource found");
                     }
-
-                    // Compare distances to select nearest energy source
-                    if (container != undefined && containerdist < sourcedist) {
-                    //transfer from container
-                        if (creep.withdraw(container, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-                            creep.moveByPath(containerpath);
+                    else if (container.ticksToRegeneration == undefined && (container.energy == undefined || container.energy < 3000)) {
+                        //container
+                        //console.log(creep.name + "(" + creep.room.name + "): container found: " + container);
+                        if (creep.withdraw(container, RESOURCE_ENERGY) != OK) {
+                            creep.moveTo(container, {reusePath: delayPathfinding});
                         }
                     }
                     else {
-                    //harvest from source
-                        if (creep.harvest(source) == ERR_NOT_IN_RANGE) {
-                            creep.moveByPath(sourcepath);
+                        //Source
+                        //console.log(creep.name + "(" + creep.room.name + "): source found: " + container);
+                        if (creep.harvest(container) != OK) {
+                            creep.moveTo(container, {reusePath: delayPathfinding});
                         }
                     }
                 }
                 else {
-                //no harvester role
-                // find closest source
-                    var returncode;
-                    var container;
-                    var source = creep.pos.findClosestByPath(FIND_SOURCES, {filter: (s) => s.energy > 0});
-                    if (source != null) {
+                    //no harvester role
+                    // find closest source
 
-                        var sourcepath = creep.pos.findPathTo(source);
-                        var sourcedist = sourcepath.length;
+                    container = creep.findResource(RESOURCE_ENERGY, FIND_SOURCES, STRUCTURE_LINK, STRUCTURE_CONTAINER, STRUCTURE_STORAGE);
+                    if (container == undefined) {
+                        //console.log(creep.name + "(" + creep.room.name + "): no resource found");
                     }
-                    else {
-                        var sourcedist = 99999;
-                    }
-
-                    // find closest container with energy
-                    //TODO Include storage in function (optionally)
-                    var containers = creep.findClosestContainer(RESOURCE_ENERGY);
-                    container = containers.container;
-                    container = creep.pos.findClosestByPath(FIND_STRUCTURES, {filter: (s) => (s.structureType == STRUCTURE_LINK && s.energy > 0) || ((s.structureType == STRUCTURE_CONTAINER || s.structureType == STRUCTURE_STORAGE) && s.store[RESOURCE_ENERGY] > 0)});
-
-                    var containerdist = 99999;
-                    if (container != null) {
-                        var containerpath = creep.pos.findPathTo(container);
-                        if (containerpath.length < containerdist) {
-                            containerdist = containerpath.length;
+                    else if (container.ticksToRegeneration == undefined && (container.energy == undefined || container.energy < 3000)) {
+                        //container
+                        //console.log(creep.name + "(" + creep.room.name + "): container found: " + container);
+                        if (creep.withdraw(container, RESOURCE_ENERGY) != OK) {
+                            creep.moveTo(container, {reusePath: delayPathfinding});
                         }
                     }
                     else {
-                        container = undefined;
+                        //Source
+                        //console.log(creep.name + "(" + creep.room.name + "): source found: " + container);
+                        if (creep.harvest(container) != OK) {
+                            creep.moveTo(container, {reusePath: delayPathfinding});
+                        }
                     }
-                    var pathToSource;
-                    var spawn = Game.getObjectById(creep.memory.spawn);
-                    // Compare distances to select nearest energy source
-                    if ((container != undefined && containerdist <= sourcedist) && (spawn.room.energyCapacityAvailable > spawn.room.energyAvailable || creep.memory.role != "harvester" || (container.structureType != STRUCTURE_STORAGE && spawn.room.storage != undefined && spawn.room.storage.storeCapacity - _.sum(spawn.room.storage.store > 0)))) {
-                    //transfer from container
-                        returncode = creep.withdraw(container, RESOURCE_ENERGY);
-                        source = container;
-                        pathToSource = containerpath;
-                    }
-                    else {
-                    //harvest from source
-                        returncode = creep.harvest(source);
-                        pathToSource = sourcepath;
-                    }
-                    var code;
-                    switch (returncode) {
-                        case (OK):
-                            creep.memory.statusHarvesting = source.id;
-                            break;
-
-                        case (ERR_INVALID_TARGET):
-                            creep.memory.statusHarvesting = false;
-                            break;
-
-                        case (ERR_NOT_IN_RANGE):
-                        // move towards the source
-                            code = creep.moveTo(source, {reusePath: 8});
-
-                            if (code != 0) {
-                                switch (code) {
-                                    case -11:
-                                        //creep.say("Tired");
-                                        break;
-
-                                    case -7:
-                                        creep.say("Invalid target!");
-                                        break;
-
-                                    case -2:
-                                        creep.say("No path!");
-                                        break;
-
-                                    default:
-                                        creep.say(code);
-                                        break;
-                                }
-                            }
-                            creep.memory.statusHarvesting = false;
-                            break;
-
-                        case -8:
-                            creep.say("Full");
-                            creep.memory.statusHarvesting = false;
-                            break;
-
-                        default:
-                            creep.say(returncode);
-                            creep.memory.statusHarvesting = false;
-
-                            // move towards the source
-                            code = creep.moveTo(source, {reusePath: 8});
-
-                            if (code != 0) {
-                                switch (code) {
-                                    case -11:
-                                        //creep.say("Tired");
-                                        break;
-
-                                    case -7:
-                                        creep.say("Invalid target!");
-                                        break;
-
-                                    case -2:
-                                        creep.say("No path!");
-                                        break;
-
-                                    default:
-                                        creep.say(code);
-                                        break;
-                                }
-                            }
-                            creep.memory.statusHarvesting = false;
-                            break;
-                    }
-                    return (returncode);
                 }
             }
             else {

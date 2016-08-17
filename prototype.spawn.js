@@ -32,7 +32,7 @@ module.exports = function() {
 					body.push(MOVE);  //50
                     body.push(MOVE);  //50
 					size=350;
-					sizelimit = 8;
+					sizelimit = 99;
 					break;
 
 				case "stationaryHarvester":
@@ -57,7 +57,7 @@ module.exports = function() {
 					body.push(MOVE);  //50
 					body.push(MOVE);  //50
 					size=300;
-					sizelimit = 7;
+					sizelimit = 10;
 					break;
 				
 				case "repairer":
@@ -73,7 +73,7 @@ module.exports = function() {
 					body.push(CARRY); //50
 					body.push(MOVE);  //50
 					size=200;
-					sizelimit = 8;
+					sizelimit = 12;
 					break;
 
 				case "wallRepairer":

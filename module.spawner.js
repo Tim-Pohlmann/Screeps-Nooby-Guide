@@ -142,7 +142,7 @@ module.exports = {
                 minimumSpawnOf.distributor = 0;
             }
         }
-
+        //TODO: If stationaryHarvester for every source in room replace 1/3 harvesters by transporters (tbd)
         var numberOf = new Array();
         // Creeps not leaving room
         numberOf["harvester"] = spawn.room.find(FIND_MY_CREEPS, {filter: (s) => (s.memory.role == "harvester")}).length;

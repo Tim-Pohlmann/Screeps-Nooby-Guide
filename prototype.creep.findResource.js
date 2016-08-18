@@ -55,7 +55,7 @@ module.exports = function() {
                         if (resource == RESOURCE_ENERGY) {
                             tempArray = this.room.memory.roomArraySpawns;
                             for (var s in tempArray) {
-                                if (Game.getObjectById(tempArray[s]).energy > 0) {
+                                if (Game.getObjectById(tempArray[s]) != null && Game.getObjectById(tempArray[s]).energy > 0) {
                                     IDBasket.push(Game.getObjectById(tempArray[s]));
                                 }
                             }
@@ -76,7 +76,7 @@ module.exports = function() {
                         if (resource == RESOURCE_ENERGY) {
                             tempArray = this.room.memory.roomArrayLinks;
                             for (var s in tempArray) {
-                                if (Game.getObjectById(tempArray[s]).energy > 0) {
+                                if (Game.getObjectById(tempArray[s]) != null && Game.getObjectById(tempArray[s]).energy > 0) {
                                     IDBasket.push(Game.getObjectById(tempArray[s]));
                                     //console.log(this.memory.role + " " + this.name + " link: " + Game.getObjectById(tempArray[s]).energy);
                                 }
@@ -97,7 +97,7 @@ module.exports = function() {
                     case STRUCTURE_CONTAINER:
                         if (resource == RESOURCE_SPACE) {
                             // Look for containers with space left
-                            tempArray = creep.room.memory.roomArrayContainers;
+                            tempArray = this.room.memory.roomArrayContainers;
                             for (var s in tempArray) {
                                 let container = Game.getObjectById(tempArray[s]);
                                 if (container.storeCapacity - _.sum(container.store) > 0) {

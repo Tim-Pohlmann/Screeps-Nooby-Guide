@@ -29,7 +29,7 @@ module.exports = {
                 var target = undefined;
                 // loop with increasing percentages
                 for (var percentage = 0.0001; percentage <= 1; percentage = percentage + 0.0001) {
-                    target = creep.pos.findClosestByPath(FIND_STRUCTURES, {filter: (s) => (s.structureType == STRUCTURE_WALL || s.structureType == STRUCTURE_RAMPART) && s.hits / s.hitsMax < percentage});
+                    target = creep.pos.findClosestByPath(FIND_STRUCTURES, {filter: (s) => (s.structureType == STRUCTURE_WALL && s.hits / s.hitsMax < percentage) || (s.structureType == STRUCTURE_RAMPART && s.hits / (s.hitsMax * 100) < percentage)});
                     if (target != undefined) {
                         break;
                     }

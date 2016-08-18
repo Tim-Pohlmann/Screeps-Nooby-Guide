@@ -1,4 +1,5 @@
 const delayPathfinding = 2;
+const delayRoomScanning = 10;
 const RESOURCE_SPACE = "space";
 
 module.exports = {
@@ -14,9 +15,12 @@ module.exports = {
 
 				default:
 					// find closest container with space to get rid of minerals
-                    var freeContainer = creep.findResource(RESOURCE_SPACE);
-
-					if (creep.transfer(freeContainer, resourceType) == ERR_NOT_IN_RANGE) {
+                    var freeContainer = creep.findResource(RESOURCE_SPACE, STRUCTURE_CONTAINER, STRUCTURE_STORAGE);
+                    //console.log(freeContainer);
+                    if (creep.room.name != creep.memory.homeroom) {
+                        creep.moveTo(creep.memory.spawn);
+                    }
+					else if (creep.transfer(freeContainer, resourceType) == ERR_NOT_IN_RANGE) {
 						creep.moveTo(freeContainer, {reusePath: delayPathfinding});
 					}
 					specialResources = true;

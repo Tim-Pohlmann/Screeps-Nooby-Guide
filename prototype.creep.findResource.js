@@ -125,8 +125,8 @@ module.exports = function() {
                         }
                         else {
                             // Look for containers with resource
-                            if (this.room.storage != undefined && this.room.storage[resource] > 0) {
-                                IDBasket.push(Game.getObjectById(tempArray[s]));
+                            if (this.room.storage != undefined && this.room.storage.store[resource] > 0) {
+                                IDBasket.push(this.room.storage);
                             }
                         }
                         break;

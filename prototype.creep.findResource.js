@@ -7,7 +7,7 @@ module.exports = function() {
 
 	Creep.prototype.findResource =
 	function(resource, sourceTypes) {
-	    if (this.memory.targetBuffer != undefined && this.memory.resourceBuffer != undefined && this.memory.resourceBuffer == resource && this.memory.resourceTicker != undefined && this.memory.resourceTicker >= Game.time - delayPathfinding)
+	    if (this.memory.targetBuffer != undefined && this.memory.resourceBuffer != undefined && this.memory.resourceBuffer == resource &&  Game.time % delayPathfinding == 0)
         {
             //return buffered resource
             return Game.getObjectById(this.memory.targetBuffer);
@@ -34,17 +34,17 @@ module.exports = function() {
                         if (resource == RESOURCE_ENERGY) {
                             tempArray = this.room.memory.roomArrayExtensions;
                             for (var s in tempArray) {
-                                if (Game.getObjectById(tempArray[s]).energy > 0) {
+                                if (Game.getObjectById(tempArray[s]) != null && Game.getObjectById(tempArray[s]).energy > 0) {
                                     IDBasket.push(Game.getObjectById(tempArray[s]));
                                 }
                             }
                         }
                         else if (resource == RESOURCE_SPACE) {
                             // Look for links with space left
-                            tempArray = creep.room.memory.roomArrayExtensions;
+                            tempArray = this.room.memory.roomArrayExtensions;
                             for (var s in tempArray) {
                                 let container = Game.getObjectById(tempArray[s]);
-                                if (container.energy > 0) {
+                                if (Game.getObjectById(tempArray[s]) != null && container.energy < container.energyCapacity) {
                                     IDBasket.push(container);
                                 }
                             }
@@ -62,10 +62,10 @@ module.exports = function() {
                         }
                         else if (resource == RESOURCE_SPACE) {
                             // Look for spawns with space left
-                            tempArray = creep.room.memory.roomArraySpawns;
+                            tempArray = this.room.memory.roomArraySpawns;
                             for (var s in tempArray) {
                                 let container = Game.getObjectById(tempArray[s]);
-                                if (container.energy > 0) {
+                                if (container.energy < container.energyCapacity) {
                                     IDBasket.push(container);
                                 }
                             }
@@ -76,7 +76,7 @@ module.exports = function() {
                         if (resource == RESOURCE_ENERGY) {
                             tempArray = this.room.memory.roomArrayLinks;
                             for (var s in tempArray) {
-                                if (Game.getObjectById(tempArray[s]) != null && Game.getObjectById(tempArray[s]).energy > 0) {
+                                if (Game.getObjectById(tempArray[s]) != null && Game.getObjectById(tempArray[s]) != null && Game.getObjectById(tempArray[s]).energy > 0) {
                                     IDBasket.push(Game.getObjectById(tempArray[s]));
                                     //console.log(this.memory.role + " " + this.name + " link: " + Game.getObjectById(tempArray[s]).energy);
                                 }
@@ -84,10 +84,31 @@ module.exports = function() {
                         }
                         else if (resource == RESOURCE_SPACE) {
                             // Look for links with space left
-                            tempArray = creep.room.memory.roomArrayLinks;
+                            tempArray = this.room.memory.roomArrayLinks;
                             for (var s in tempArray) {
                                 let container = Game.getObjectById(tempArray[s]);
-                                if (container.energy > 0) {
+                                if (Game.getObjectById(tempArray[s]) != null && container.energy < container.energyCapacity) {
+                                    IDBasket.push(container);
+                                }
+                            }
+                        }
+                        break;
+
+                    case STRUCTURE_TOWER:
+                        if (resource == RESOURCE_ENERGY) {
+                            tempArray = this.room.memory.roomArrayTowers;
+                            for (var s in tempArray) {
+                                if (Game.getObjectById(tempArray[s]) != null && Game.getObjectById(tempArray[s]) != null && Game.getObjectById(tempArray[s]).energy > 0) {
+                                    IDBasket.push(Game.getObjectById(tempArray[s]));
+                                }
+                            }
+                        }
+                        else if (resource == RESOURCE_SPACE) {
+                            // Look for links with space left
+                            tempArray = this.room.memory.roomArrayTowers;
+                            for (var s in tempArray) {
+                                let container = Game.getObjectById(tempArray[s]);
+                                if (Game.getObjectById(tempArray[s]) != null && container.energy < container.energyCapacity) {
                                     IDBasket.push(container);
                                 }
                             }
@@ -99,9 +120,8 @@ module.exports = function() {
                             // Look for containers with space left
                             tempArray = this.room.memory.roomArrayContainers;
                             for (var s in tempArray) {
-                                let container = Game.getObjectById(tempArray[s]);
-                                if (container.storeCapacity - _.sum(container.store) > 0) {
-                                    IDBasket.push(container);
+                                if (Game.getObjectById(tempArray[s]) != null && Game.getObjectById(tempArray[s]).storeCapacity - _.sum(Game.getObjectById(tempArray[s]).store) > 0) {
+                                    IDBasket.push(Game.getObjectById(tempArray[s]));
                                 }
                             }
                         }
@@ -109,7 +129,7 @@ module.exports = function() {
                             // Look for containers with resource
                             tempArray = this.room.memory.roomArrayContainers;
                             for (var s in tempArray) {
-                                if (Game.getObjectById(tempArray[s]).store[resource] > 0) {
+                                if (Game.getObjectById(tempArray[s]) != null && Game.getObjectById(tempArray[s]).store[resource] > 0) {
                                     IDBasket.push(Game.getObjectById(tempArray[s]));
                                 }
                             }
@@ -119,13 +139,13 @@ module.exports = function() {
                     case STRUCTURE_STORAGE:
                         if (resource == RESOURCE_SPACE) {
                             // Look for storage with space left
-                            if (this.room.storage.storeCapacity - _.sum(this.room.storage.store) > 0) {
+                            if (this.room.storage != undefined && this.room.storage.storeCapacity - _.sum(this.room.storage.store) > 0) {
                                 IDBasket.push(this.room.storage);
                             }
                         }
                         else {
                             // Look for containers with resource
-                            if (this.room.storage != undefined && this.room.storage.store[resource] > 0) {
+                            if (this.room.storage != undefined && this.room.storage != undefined && this.room.storage.store[resource] > 0) {
                                 IDBasket.push(this.room.storage);
                             }
                         }
@@ -134,13 +154,13 @@ module.exports = function() {
                     case STRUCTURE_TERMINAL:
                         if (resource == RESOURCE_SPACE) {
                             // Look for storage with space left
-                            if (this.room.terminal.storeCapacity - _.sum(this.room.terminal.store) > 0) {
+                            if (this.room.terminal != undefined && this.room.terminal.storeCapacity - _.sum(this.room.terminal.store) > 0) {
                                 IDBasket.push(this.room.terminal);
                             }
                         }
                         else {
                             // Look for containers with resource
-                            if (this.room.terminal.store[resource] > 0) {
+                            if (this.room.terminal != undefined && this.room.terminal.store[resource] > 0) {
                                 IDBasket.push(this.room.terminal);
                             }
                         }
@@ -150,11 +170,7 @@ module.exports = function() {
 
             //Get path to collected objects
             var target = this.pos.findClosestByPath(IDBasket);
-            if (target != null && target.cooldown != undefined) {
-                //console.log(this.memory.role + " " + this.name + " target: " + target);
-            }
             this.memory.resourceBuffer = resource;
-            this.memory.resourceTicker = Game.time;
             if (target != null) {
                 this.memory.targetBuffer = target.id;
             }

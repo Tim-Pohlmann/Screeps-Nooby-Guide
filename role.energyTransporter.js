@@ -9,12 +9,17 @@ module.exports = {
     run: function(creep) {
         // if creep is bringing energy to a structure but has no energy left
         if (creep.carry.energy == 0) {
-
+            if (creep.memory.working == true) {
+                delete creep.memory.targetBuffer;
+            }
             // switch state to harvesting
             creep.memory.working = false;
         }
         // if creep is harvesting energy but is full
         else if (_.sum(creep.carry) == creep.carryCapacity) {
+            if (creep.memory.working == false) {
+                delete creep.memory.targetBuffer;
+            }
             // switch state
             creep.memory.working = true;
         }
@@ -22,10 +27,12 @@ module.exports = {
         // if creep is supposed to transfer energy to a structure
         if (creep.memory.working == true) {
 			// find closest spawn, extension or tower which is not full
-            var structure = Game.getObjectById(creep.findResource(RESOURCE_SPACE, STRUCTURE_SPAWN, STRUCTURE_EXTENSION, STRUCTURE_TOWER));
+            var structure = creep.findResource(RESOURCE_SPACE, STRUCTURE_SPAWN, STRUCTURE_EXTENSION, STRUCTURE_TOWER);
 			// if we found one
+
 			if (structure != undefined && structure != null) {
 				// try to transfer energy, if it is not in range
+
 				if (creep.transfer(structure, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
 					// move towards it
 					creep.moveTo(structure, {reusePath: delayPathfinding});
@@ -33,8 +40,10 @@ module.exports = {
 			}
 			else {
 				// spawn, extensions and towers full with energy
-			    //var storage = creep.pos.findClosestByPath(FIND_MY_STRUCTURES, {	filter: (s) => (s.structureType == STRUCTURE_STORAGE) && _.sum(s.store) < s.storeCapacity});
-                var container = creep.findResource(RESOURCE_SPACE, STRUCTURE_CONTAINER, STRUCTURE_STORAGE);
+                var container = creep.findResource(RESOURCE_SPACE, STRUCTURE_STORAGE);
+                if (container == null || container == undefined) {
+                    container = creep.findResource(RESOURCE_SPACE, STRUCTURE_CONTAINER);
+                }
 
 				if (creep.transfer(container, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
 					// move towards it

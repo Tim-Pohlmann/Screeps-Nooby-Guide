@@ -1,3 +1,5 @@
+const RESOURCE_SPACE = "space";
+
 module.exports = {
     // state working = Returning energy to structure
 
@@ -30,104 +32,104 @@ module.exports = {
             }
             else {
                 // back in spawn room
-                var freeContainerArray = creep.findClosestContainer(0);
-                var structure = freeContainerArray.container;
-
-                if (structure == null) {
-                    // find closest spawn, extension, tower or container which is not full
-                    structure = creep.pos.findClosestByPath(FIND_MY_STRUCTURES, {
-                            filter: (s) => ((s.structureType == STRUCTURE_SPAWN
-                        || s.structureType == STRUCTURE_EXTENSION
-                        || s.structureType == STRUCTURE_TOWER)
-                        && s.energy < s.energyCapacity) || (s.structureType == STRUCTURE_STORAGE && s.storeCapacity - _.sum(s.store) > 0)});
-                }
-
+                var structure = creep.findResource(RESOURCE_SPACE, STRUCTURE_CONTAINER, STRUCTURE_LINK, STRUCTURE_TOWER, STRUCTURE_STORAGE, STRUCTURE_SPAWN);
                 // if we found one
                 if (structure != null) {
-
-                    if (structure.structureType == STRUCTURE_SPAWN && structure.energy == structure.energyCapacity) {
-                        roleUpgrader.run(creep);
-                    }
                     // try to transfer energy, if it is not in range
-                    else if (creep.transfer(structure, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+                    if (creep.transfer(structure, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
                         // move towards it
                         creep.moveTo(structure, {reusePath: 10});
                     }
                 }
             }
         }
-        // if creep is supposed to harvest energy from source
+        // if creep is supposed to demolish
         else {
-            //TODO Several remote sources per spawn
-            //Find remote source
-            var demolishFlags = _.filter(Game.flags,{ memory: { function: 'demolish', spawn: creep.memory.spawn}});
+            //TODO Several demolishers per spawn
+            //Find something to demolish
+            var demolishFlag = _.filter(Game.flags,{ memory: { function: 'demolish', spawn: creep.memory.spawn}})[0];
 
-            if (demolishFlags.length > 0) {
-
-                var demolishFlag = demolishFlags[0];
+            //var demolishFlag = creep.findMyFlag("demolish");
+            //demolishFlag = _.filter(Game.flags,{ name: demolishFlag});
+            if (demolishFlag != null) {
                 // Find exit to target room
-                if (creep.room != demolishFlag.room) {
+                if (demolishFlag.room == undefined || creep.room.name != demolishFlag.room.name) {
                     //still in old room, go out
-                    if (!creep.memory.path) {
-                        creep.memory.path = creep.pos.findPathTo(demolishFlag);
-                    }
-                    if (creep.moveByPath(creep.memory.path) == ERR_NOT_FOUND) {
-                        creep.memory.path = creep.pos.findPathTo(demolishFlag);
-                        creep.moveByPath(creep.memory.path)
-                    }
+                    creep.moveTo(demolishFlag, {reusePath: 3});
+                    creep.memory.oldRoom = true;
                 }
                 else {
                     if (creep.room.memory.hostiles == 0) {
-                        //new room reached, start demolishing
-                        var targetlist;
+                        if (creep.memory.statusDemolishing == undefined) {
+                            //new room reached, start demolishing
+                            if (creep.memory.oldRoom == true) {
+                                delete creep.memory.targetBuffer;
+                                delete creep.memory.oldRoom;
+                                delete creep.memory._move;
+                                delete creep.memory.path;
+                            }
+                            var targetlist;
 
-                        if (demolishFlag.memory.target == "object") {
-                            //demolish flag position structures
-                            targetlist = demolishFlag.pos.lookFor(LOOK_STRUCTURES);
-                            // Go through target list
-                            for (var i in targetlist) {
-                                if (targetlist[i].structureType != undefined) {
-                                    if ((targetlist[i].store != undefined && targetlist[i].store[RESOURCE_ENERGY] > 0) || (targetlist[i].energy != undefined && targetlist[i].energy > 0)) {
-                                        //empty structure of energy first
-                                        if (creep.withdraw(targetlist[i], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+                            if (demolishFlag.memory.target == "object") {
+                                //demolish flag position structures
+                                targetlist = demolishFlag.pos.lookFor(LOOK_STRUCTURES);
+                                // Go through target list
+                                for (var i in targetlist) {
+                                    if (targetlist[i].structureType != undefined) {
+                                        if ((targetlist[i].store != undefined && targetlist[i].store[RESOURCE_ENERGY] > 0) || (targetlist[i].energy != undefined && targetlist[i].energy > 0)) {
+                                            //empty structure of energy first
+                                            if (creep.withdraw(targetlist[i], RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+                                                creep.moveTo(targetlist[i], {reusePath: 10});
+                                            }
+                                        }
+                                        else if (creep.dismantle(targetlist[i]) == ERR_NOT_IN_RANGE) {
                                             creep.moveTo(targetlist[i], {reusePath: 10});
                                         }
+                                        break;
                                     }
-                                    else if (creep.dismantle(targetlist[i]) == ERR_NOT_IN_RANGE) {
-                                        creep.moveTo(targetlist[i], {reusePath: 10});
-                                    }
-                                    break;
+                                }
+                                if (targetlist.length == 0) {
+                                    Game.notify("Demolition flag in room " + demolishFlag.pos.roomName + " is placed in empty square!")
                                 }
                             }
-                            if (targetlist.length == 0) {
-                                Game.notify("Demolition flag in room " + demolishFlag.pos.roomName + " is placed in empty square!")
-                            }
-                        }
-                        else if (demolishFlag.memory.target == "room") {
-                            //demolish all structures
-                            // find structures with energy
-                            var target = creep.pos.findClosestByPath(FIND_STRUCTURES,{ filter: (s) =>((s.energy != undefined && s.energy > 0) || (s.store != undefined && s.store[RESOURCE_ENERGY] > 0)) && (s.structureType == STRUCTURE_SPAWN || s.structureType == STRUCTURE_EXTENSION || s.structureType == STRUCTURE_TOWER || s.structureType == STRUCTURE_CONTAINER || s.structureType == STRUCTURE_STORAGE || s.structureType == STRUCTURE_TERMINAL || s.structureType == STRUCTURE_LINK || s.structureType == STRUCTURE_LAB)});
-                            if (target == null) {
-                                target = creep.pos.findClosestByPath(FIND_STRUCTURES,{ filter: (s) => s.structureType == STRUCTURE_SPAWN || s.structureType == STRUCTURE_EXTENSION || s.structureType == STRUCTURE_TOWER || s.structureType == STRUCTURE_CONTAINER || s.structureType == STRUCTURE_STORAGE || s.structureType == STRUCTURE_TERMINAL || s.structureType == STRUCTURE_LINK || s.structureType == STRUCTURE_LAB || s.structureType == STRUCTURE_RAMPART});
-                            }
+                            else if (demolishFlag.memory.target == "room") {
+                                //demolish all structures in room
+                                // find structures with energy
+                                //var target = creep.pos.findClosestByPath(FIND_STRUCTURES,{ filter: (s) =>((s.energy != undefined && s.energy > 0) || (s.store != undefined && s.store[RESOURCE_ENERGY] > 0)) && (s.structureType == STRUCTURE_SPAWN || s.structureType == STRUCTURE_EXTENSION || s.structureType == STRUCTURE_TOWER || s.structureType == STRUCTURE_CONTAINER || s.structureType == STRUCTURE_STORAGE || s.structureType == STRUCTURE_TERMINAL || s.structureType == STRUCTURE_LINK || s.structureType == STRUCTURE_LAB)});
+                                var target = creep.findResource(RESOURCE_ENERGY, STRUCTURE_SPAWN, STRUCTURE_EXTENSION, STRUCTURE_TERMINAL, STRUCTURE_STORAGE, STRUCTURE_TOWER, STRUCTURE_LINK, STRUCTURE_LAB);
+                                if (target == null) {
+                                    target = creep.pos.findClosestByPath(FIND_STRUCTURES, {filter: (s) => s.structureType != STRUCTURE_ROAD});
+                                }
 
-                            if (target != null) {
-                                if ((target.store != undefined && target.store[RESOURCE_ENERGY] > 0) || target.energy != undefined && target.energy > 20) {
-                                    //empty structure of energy first
-                                    if (creep.withdraw(target, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-                                        creep.moveTo(target, {reusePath: 10});
+                                if (target != null) {
+                                    if ((target.store != undefined && target.store[RESOURCE_ENERGY] > 0) || target.energy != undefined && target.energy > 20) {
+                                        //empty structure of energy first
+                                        if (creep.withdraw(target, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+                                            creep.moveTo(target, {reusePath: 5});
+                                        }
+                                        else if (creep.withdraw(target, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+                                            creep.moveTo(target, {reusePath: 5});
+                                        }
                                     }
                                     else {
-                                        creep.withdraw(target, RESOURCE_ENERGY);
+                                        var result = creep.dismantle(target);
+                                        if (result == ERR_NOT_IN_RANGE) {
+                                            creep.moveTo(target, {reusePath: 5});
+                                        }
+                                        else if (result == OK) {
+                                            creep.memory.statusDemolishing = target.id;
+                                        }
                                     }
                                 }
-                                else if (creep.dismantle(target) == ERR_NOT_IN_RANGE) {
-                                    creep.moveTo(target, {reusePath: 10});
-                                }
+                            }
+                        } else {
+                            if (creep.dismantle(Game.getObjectById(creep.memory.statusDemolishing)) != OK) {
+                                delete creep.memory.statusDemolishing;
+                                delete creep.memory.path;
+                                delete creep.memory._move;
+                                delete creep.memory.targetBuffer;
                             }
                         }
-
-
                     }
                     else {
                         //Hostiles creeps in new room

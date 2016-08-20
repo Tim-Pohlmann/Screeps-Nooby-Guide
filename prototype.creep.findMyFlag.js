@@ -1,5 +1,5 @@
 module.exports = function() {
-    // create a new function for Creep
+    // find unoccupied flag and return flag name
 	Creep.prototype.findMyFlag =
 	function(flagFunction) {
 	    var flagList;

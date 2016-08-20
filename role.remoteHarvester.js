@@ -28,7 +28,7 @@ module.exports = {
         }
 
         if (specialResources == false) { // if creep is bringing energy to a structure but has no energy left
-            if (creep.carry.energy == 0) {
+            if (_.sum(creep.carry) == 0) {
                 // switch state to harvesting
                 if (creep.memory.working == true) {
                     delete creep.memory.path;
@@ -56,14 +56,13 @@ module.exports = {
                 }
                 else {
                     var road = creep.pos.lookFor(LOOK_STRUCTURES);
-                    var terrain = creep.pos.lookFor(LOOK_TERRAIN);
                     var constructionSite = creep.pos.lookFor((LOOK_CONSTRUCTION_SITES));
 
-                    if (terrain == "swamp" && road[0] == undefined && constructionSite[0] == undefined) {
+                    if (road[0] == undefined && constructionSite[0] == undefined && creep.room.name != creep.memory.homeroom) {
                         //Road on swamp needed
                         creep.pos.createConstructionSite(STRUCTURE_ROAD);
                     }
-                    if (terrain == "swamp" && road[0] != undefined && road[0].hits < road[0].hitsMax && road[0].structureType == STRUCTURE_ROAD && creep.room.name != creep.memory.homeroom) {
+                    if (road[0] != undefined && road[0].hits < road[0].hitsMax && road[0].structureType == STRUCTURE_ROAD && creep.room.name != creep.memory.homeroom) {
                         // Found road to repair
                         creep.repair(road[0]);
                     }
@@ -85,22 +84,12 @@ module.exports = {
 
                             delete creep.memory.path;
                             // find closest spawn, extension, tower or container which is not full
-                            structure = creep.pos.findClosestByPath(FIND_STRUCTURES, {
-                                    filter: (s) => ((s.structureType == STRUCTURE_SPAWN
-                                || s.structureType == STRUCTURE_EXTENSION
-                                || s.structureType == STRUCTURE_TOWER
-                                || s.structureType == STRUCTURE_LINK)
-                                && s.energy < s.energyCapacity) || ((s.structureType == STRUCTURE_STORAGE || s.structureType == STRUCTURE_CONTAINER) && s.storeCapacity - _.sum(s.store) > 0)
-                        })
-                            ;
+                            structure = creep.findResource(RESOURCE_SPACE, STRUCTURE_SPAWN, STRUCTURE_TOWER, STRUCTURE_LINK, STRUCTURE_CONTAINER, STRUCTURE_STORAGE);
+
                             // if we found one
                             if (structure != null) {
-
-                                if (structure.structureType == STRUCTURE_SPAWN && structure.energy == structure.energyCapacity) {
-                                    roleUpgrader.run(creep);
-                                }
                                 // try to transfer energy, if it is not in range
-                                else if (creep.transfer(structure, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+                                if (creep.transfer(structure, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
                                     // move towards it
                                     creep.moveTo(structure, {reusePath: 5, ignoreCreeps: false});
                                 }

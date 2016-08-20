@@ -1,6 +1,13 @@
+const CPUdebug = false;
+
 const delayPathfinding = 2;
-const delayRoomScanning = 10;
+const delayRoomScanning = 20;
 const RESOURCE_SPACE = "space";
+
+global = new Array();
+global["delayPathfinding"] = 2;
+global["delayRoomScanning"] = 10;
+Memory.global = global;
 
 require('prototype.spawn')();
 require('prototype.creep.findClosestContainer')();
@@ -21,6 +28,7 @@ var roleMiner = require('role.miner');
 var roleDistributor = require("role.distributor");
 var roleDemolisher = require('role.demolisher');
 var moduleSpawner = require('module.spawner');
+var roleEnergyTransporter = require("role.energyTransporter");
 
 var playerUsername = "Pantek59";
 var allies = new Array();
@@ -28,10 +36,9 @@ allies.push("king_lispi");
 allies.push("Tanjera");
 allies.push("Atavus");
 allies.push("BlackLotus");
-allies.push("shedletsky");
 
 module.exports.loop = function () {
-    //PathFinder.use(isEnabled);
+    if (CPUdebug == true) {console.log("Start: " + Game.cpu.getUsed())}
 
 	// check for memory entries of died creeps by iterating over Memory.creeps
     for (var name in Memory.creeps) {
@@ -43,9 +50,9 @@ module.exports.loop = function () {
     }
     var senex = _.filter(Game.creeps,{ ticksToLive: 1});
     for (var ind in senex) {
-        console.log(senex[ind].name + " the \"" + senex[ind].memory.role + "\" expired in room " + senex[ind].room.name + ".");
+        console.log("Creep expired: " + senex[ind].name + " the \"" + senex[ind].memory.role + "\" in room " + senex[ind].room.name + ".");
     }
-
+    if (CPUdebug == true) {console.log("Start cycling through rooms: " + Game.cpu.getUsed())}
     // Cycle through rooms    
     for (var r in Game.rooms) {
         //Save # of hostile creeps in room
@@ -61,12 +68,13 @@ module.exports.loop = function () {
             Game.rooms[r].memory.terminalEnergyCost = 0;
         }
 
-        // Preload room structure (will be executed every few ticks)
+        //  Refresher (will be executed every few ticks)
         var searchresult;
 
-        if (Game.rooms[r].memory.resourceTicker == undefined || Game.rooms[r].memory.resourceTicker == 0 || Game.rooms[r].memory.resourceTicker < Game.time - delayRoomScanning) {
+        if (Game.time % delayRoomScanning == 0) {
             Game.rooms[r].memory.resourceTicker = Game.time;
 
+            // Preloading room structure
             if (Game.rooms[r].memory.roomArraySources == undefined) {
                 var sourceIDs = new Array();
                 searchResult = Game.rooms[r].find(FIND_SOURCES);
@@ -152,6 +160,35 @@ module.exports.loop = function () {
             }
         }
 
+        //Flag code
+        if (CPUdebug == true) {console.log("Starting flag code: " + Game.cpu.getUsed())}
+        var remoteHarvestingFlags = _.filter(Game.flags,{ memory: { function: 'remoteSource'}});
+
+        for (var f in remoteHarvestingFlags) {
+            var flag = remoteHarvestingFlags[f];
+            if (flag.room != undefined) {
+                // We have visibility in room
+                //console.log("flag");
+                if (flag.room.memory.hostiles > 0 && flag.room.memory.panicFlag == undefined) {
+                    //Hostiles present in room with remote harvesters
+                    console.log("Panic flag is set in room " + flag.room.name);
+
+                    var panicFlag = flag.pos.createFlag(); // create white panic flag to attract protectors
+                    flag.room.memory.panicFlag = panicFlag;
+                    panicFlag = _.filter(Game.flags,{ name: panicFlag})[0];
+                    panicFlag.memory.function = "protector";
+                    panicFlag.memory.volume = flag.room.memory.hostiles;
+                    panicFlag.memory.spawn = flag.memory.spawn;
+                }
+                else if (flag.room.memory.hostiles == 0 && flag.room.memory.panicFlag != undefined) {
+                    // No hostiles present in room with remote harvesters
+                    var tempFlag = _.filter(Game.flags,{ name: flag.room.memory.panicFlag})[0];
+                    tempFlag.remove();
+                    delete flag.room.memory.panicFlag;
+                }
+            }
+        }
+        if (CPUdebug == true) {console.log("Starting spawn code: " + Game.cpu.getUsed())}
         // Spawn code
         var spawns = Game.rooms[r].find(FIND_MY_SPAWNS);
         if (spawns.length == 0) {
@@ -233,7 +270,7 @@ module.exports.loop = function () {
                 }
             }
         }
-
+        if (CPUdebug == true) {console.log("Starting tower code: " + Game.cpu.getUsed())}
         // Tower code      
         var towers = Game.rooms[r].find(FIND_MY_STRUCTURES, {filter: {structureType: STRUCTURE_TOWER}});
         var hostiles = Game.rooms[r].find(FIND_HOSTILE_CREEPS);
@@ -286,6 +323,7 @@ module.exports.loop = function () {
                 }
             }
         }
+        if (CPUdebug == true) {console.log("Start dropped energy search: " + Game.cpu.getUsed())}
         // Search for dropped energy
         var energies=Game.rooms[r].find(FIND_DROPPED_ENERGY);
         for (energy in energies) {
@@ -294,11 +332,11 @@ module.exports.loop = function () {
 
             if (energyAmount > 5 && Game.rooms[r].memory.hostiles == 0) {
                 var collector = energies[energy].pos.findClosestByPath(FIND_MY_CREEPS, {
-                        filter: (s) => (s.carryCapacity - _.sum(s.carry) - energyAmount) >= 0});
+                        filter: (s) => (s.carryCapacity - _.sum(s.carry) - energyAmount) >= 0 && s.memory.role != "protector" && s.memory.role != "distributor"});
 
                 if (collector == null) {
                     collector = energies[energy].pos.findClosestByPath(FIND_MY_CREEPS, {
-                            filter: (s) => (s.carryCapacity - _.sum(s.carry)) > 0});
+                            filter: (s) => (s.carryCapacity - _.sum(s.carry)) > 0 && s.memory.role != "protector" && s.memory.role != "distributor"});
                 }
 
                 if (collector != null) {
@@ -311,7 +349,7 @@ module.exports.loop = function () {
                 //console.log(collector.name + " is picking up dropped energy (" + energyAmount + ") in room " + energies[energy].room);
             }
         }
-
+        if (CPUdebug == true) {console.log("Starting link code: " + Game.cpu.getUsed())}
         // Link code
         var RoomLinks = Game.rooms[r].find(FIND_MY_STRUCTURES,{filter: (s) => (s.structureType == STRUCTURE_LINK)});
         var targetLevel = 0;
@@ -327,11 +365,11 @@ module.exports.loop = function () {
 
         if (targetLevel != null) {
             for (var link in RoomLinks) {
-                if (Math.ceil(RoomLinks[link].energy / 100) < targetLevel && Math.ceil(RoomLinks[link].energy / 100) < minLevel) {
+                if (Math.ceil(RoomLinks[link].energy / 100) <= targetLevel && Math.ceil(RoomLinks[link].energy / 100) <= minLevel) {
                     minLevel = Math.ceil(RoomLinks[link].energy / 100);
                     minLink = RoomLinks[link];
                 }
-                else if (Math.ceil(RoomLinks[link].energy / 100) > targetLevel && Math.ceil(RoomLinks[link].energy / 100) > maxLevel) {
+                else if (Math.ceil(RoomLinks[link].energy / 100) >= targetLevel && Math.ceil(RoomLinks[link].energy / 100) >= maxLevel) {
                     maxLevel = Math.ceil(RoomLinks[link].energy / 100);
                     maxLink = RoomLinks[link];
                 }
@@ -342,7 +380,7 @@ module.exports.loop = function () {
         }
 
         // Terminal code
-
+        if (CPUdebug == true) {console.log("Starting terminal code: " + Game.cpu.getUsed())}
         if (Game.rooms[r].memory.terminalTransfer != undefined) {
             var terminal = Game.rooms[r].terminal;
             if (terminal != undefined) {
@@ -377,7 +415,7 @@ module.exports.loop = function () {
             }
         }
     }
-
+    if (CPUdebug == true) {console.log("Starting creeps: " + Game.cpu.getUsed())}
 	//Cycle through creeps
     // for every creep name in Game.creeps
     for (let name in Game.creeps) {
@@ -399,48 +437,81 @@ module.exports.loop = function () {
             creep.memory.jobQueueTask = undefined;
         }
         else {
-            // if creep is harvester, call harvester script
-            if (creep.memory.role == 'harvester') {
-                roleHarvester.run(creep);
+            if (CPUdebug == true) {console.log("Start creep " + creep.name +"( "+ creep.memory.role + "): " + Game.cpu.getUsed())}
+            if (creep.memory.role != "miner" && creep.memory.role != "distributer" && _.sum(creep.carry) != creep.carry.energy) {
+                // Minerals found in creep
+                for (var resourceType in creep.carry) {
+                    switch (resourceType) {
+                        case RESOURCE_ENERGY:
+                            break;
+                        default:
+                            if (creep.room.name != creep.memory.homeroom) {
+                                creep.moveTo(Game.getObjectById(creep.memory.spawn), {reusePath: 5});
+                            }
+                            else {
+                                // find closest container with space to get rid of minerals
+                                var freeContainer = creep.findResource(RESOURCE_SPACE, STRUCTURE_CONTAINER, STRUCTURE_STORAGE);
+                                //console.log(freeContainer);
+                                if (creep.room.name != creep.memory.homeroom) {
+                                    creep.moveTo(creep.memory.spawn);
+                                }
+                                else if (creep.transfer(freeContainer, resourceType) == ERR_NOT_IN_RANGE) {
+                                    creep.moveTo(freeContainer, {reusePath: delayPathfinding});
+                                }
+                            }
+                            break;
+                    }
+                }
             }
-            // if creep is upgrader, call upgrader script
-            else if (creep.memory.role == 'upgrader') {
-                roleUpgrader.run(creep);
-            }		
-            // if creep is builder, call builder script
-            else if (creep.memory.role == 'builder') {
-                roleBuilder.run(creep);
-            }
-    		        // if creep is repairer, call repairer script
-            else if (creep.memory.role == 'repairer') {
-                roleRepairer.run(creep);
-            }
-            // if creep is wallRepairer, call wallRepairer script
-            else if (creep.memory.role == 'wallRepairer') {
-                roleWallRepairer.run(creep);
-            }
-            // if creep is remoteHarvester, call remoteHarvester script
-            else if (creep.memory.role == 'remoteHarvester') {
-                roleRemoteHarvester.run(creep);
-            }
-            else if (creep.memory.role == 'protector') {
-                roleProtector.run(creep, allies);
-            }
-            else if (creep.memory.role == 'claimer') {
-                roleClaimer.run(creep);
-            }
-            else if (creep.memory.role == 'stationaryHarvester') {
-                roleStationaryHarvester.run(creep);
-            }
-            else if (creep.memory.role == 'miner') {
-                roleMiner.run(creep);
-            }
-            else if (creep.memory.role == 'distributor') {
-                roleDistributor.run(creep);
-            }
-            else if (creep.memory.role == 'demolisher') {
-                roleDemolisher.run(creep);
+            else {
+                // if creep is harvester, call harvester script
+                if (creep.memory.role == 'harvester') {
+                    roleHarvester.run(creep);
+                }
+                // if creep is upgrader, call upgrader script
+                else if (creep.memory.role == 'upgrader') {
+                    roleUpgrader.run(creep);
+                }
+                // if creep is builder, call builder script
+                else if (creep.memory.role == 'builder') {
+                    roleBuilder.run(creep);
+                }
+                // if creep is repairer, call repairer script
+                else if (creep.memory.role == 'repairer') {
+                    roleRepairer.run(creep);
+                }
+                // if creep is wallRepairer, call wallRepairer script
+                else if (creep.memory.role == 'wallRepairer') {
+                    roleWallRepairer.run(creep);
+                }
+                // if creep is remoteHarvester, call remoteHarvester script
+                else if (creep.memory.role == 'remoteHarvester') {
+                    roleRemoteHarvester.run(creep);
+                }
+                else if (creep.memory.role == 'protector') {
+                    roleProtector.run(creep, allies);
+                }
+                else if (creep.memory.role == 'claimer') {
+                    roleClaimer.run(creep);
+                }
+                else if (creep.memory.role == 'stationaryHarvester') {
+                    roleStationaryHarvester.run(creep);
+                }
+                else if (creep.memory.role == 'miner') {
+                    roleMiner.run(creep);
+                }
+                else if (creep.memory.role == 'distributor') {
+                    roleDistributor.run(creep);
+                }
+                else if (creep.memory.role == 'demolisher') {
+                    roleDemolisher.run(creep);
+                }
+                else if (creep.memory.role == 'energyTransporter') {
+                    roleEnergyTransporter.run(creep);
+                }
             }
         }
+        if (CPUdebug == true) {console.log("Creep " + creep.name +"( "+ creep.memory.role + ") finished: " + Game.cpu.getUsed())}
     }
+    if (CPUdebug == true) {console.log("Finish: " + Game.cpu.getUsed())}
 };

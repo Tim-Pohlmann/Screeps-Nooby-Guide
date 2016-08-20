@@ -20,8 +20,7 @@ module.exports = function() {
 					body.push(WORK); //100
 					body.push(CARRY); //50
 					body.push(MOVE);  //50
-					body.push(MOVE);  //50
-					size=250;
+					size=200;
 					sizelimit = 10;
 					break;
 				
@@ -32,8 +31,16 @@ module.exports = function() {
 					body.push(MOVE);  //50
                     body.push(MOVE);  //50
 					size=350;
-					sizelimit = 99;
+					sizelimit = 6;
 					break;
+
+                case "energyTransporter":
+                    body.push(CARRY); //50
+                    body.push(CARRY); //50
+                    body.push(MOVE);  //50
+                    size=150;
+                    sizelimit = 6;
+                    break;
 
 				case "stationaryHarvester":
 					body.push(WORK); //100
@@ -57,7 +64,7 @@ module.exports = function() {
 					body.push(MOVE);  //50
 					body.push(MOVE);  //50
 					size=300;
-					sizelimit = 10;
+					sizelimit = 6;
 					break;
 				
 				case "repairer":
@@ -73,7 +80,7 @@ module.exports = function() {
 					body.push(CARRY); //50
 					body.push(MOVE);  //50
 					size=200;
-					sizelimit = 12;
+					sizelimit = 9;
 					break;
 
 				case "wallRepairer":
@@ -83,7 +90,7 @@ module.exports = function() {
 					body.push(MOVE);  //50
 					body.push(MOVE);  //50
 					size=300;
-					sizelimit = 10;
+					sizelimit = 5;
 					break;
 
 				case "claimer":
@@ -100,9 +107,8 @@ module.exports = function() {
 					body.push(ATTACK);//100
 					body.push(MOVE);  //50
 					body.push(MOVE);  //50
-                    body.push(MOVE);  //50
-					size=350;
-					sizelimit = 10;
+					size=300;
+					sizelimit = 7;
 					break;
 
 				case "miner":
@@ -112,7 +118,7 @@ module.exports = function() {
 					body.push(MOVE);  //50
 					body.push(MOVE);  //50
 					size=300;
-					sizelimit = 5;
+					sizelimit = 4;
 					break;
 
                 case "distributor":
@@ -126,11 +132,13 @@ module.exports = function() {
 
                 case "demolisher":
                     body.push(WORK); //100
+                    body.push(WORK); //100
                     body.push(CARRY); //50
                     body.push(MOVE);  //50
                     body.push(MOVE);  //50
-                    size=250;
-                    sizelimit = 10;
+                    body.push(MOVE);  //50
+                    size=400;
+                    sizelimit = 4;
                     break;
 
 				default:

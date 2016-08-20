@@ -142,7 +142,6 @@ module.exports = {
                 minimumSpawnOf.distributor = 0;
             }
         }
-        //TODO: If stationaryHarvester for every source in room replace 1/3 harvesters by transporters (tbd)
         var numberOf = new Array();
         // Creeps not leaving room
         numberOf["harvester"] = spawn.room.find(FIND_MY_CREEPS, {filter: (s) => (s.memory.role == "harvester")}).length;
@@ -153,6 +152,7 @@ module.exports = {
         numberOf["miner"] = spawn.room.find(FIND_MY_CREEPS, {filter: (s) => (s.memory.role == "miner")}).length;
         numberOf["upgrader"] = spawn.room.find(FIND_MY_CREEPS, {filter: (s) => (s.memory.role == "upgrader")}).length;
         numberOf["distributor"] = spawn.room.find(FIND_MY_CREEPS, {filter: (s) => (s.memory.role == "distributor")}).length;
+        numberOf["energyTransporter"] = spawn.room.find(FIND_MY_CREEPS, {filter: (s) => (s.memory.role == "energyTransporter")}).length;
 
         //Creeps leaving room
         numberOf["remoteHarvester"] = _.filter(Game.creeps,{ memory: { role: 'remoteHarvester', spawn: spawn.id}}).length;
@@ -165,7 +165,7 @@ module.exports = {
 
         var hostiles = spawn.room.memory.hostiles;
         // if not enough harvesters
-        if (numberOf.harvester < minimumSpawnOf.harvester) {
+        if (numberOf.harvester + numberOf.energyTransporter < minimumSpawnOf.harvester) {
             // try to spawn one
             var rolename = 'harvester';
             // if spawning failed and we have no harvesters left
@@ -173,15 +173,21 @@ module.exports = {
                 // spawn one with what is available
                 var rolename = 'miniharvester';
             }
-        }
-        else if (numberOf.claimer < minimumSpawnOf.claimer) {
-            var rolename = 'claimer';
+            else if (minimumSpawnOf.stationaryHarvester > 0 && minimumSpawnOf.stationaryHarvester == numberOf.stationaryHarvester && minimumSpawnOf.harvester - numberOf.harvester < 2) {
+                var rolename = "energyTransporter";
+            }
         }
         else if (numberOf.protector < minimumSpawnOf.protector) {
             var rolename = 'protector';
         }
+        else if (numberOf.claimer < minimumSpawnOf.claimer) {
+            var rolename = 'claimer';
+        }
         else if (numberOf.stationaryHarvester < minimumSpawnOf.stationaryHarvester) {
             var rolename = 'stationaryHarvester';
+        }
+        else if (numberOf.remoteHarvester < Math.floor(minimumSpawnOf.remoteHarvester / 2)) {
+            var rolename = 'remoteHarvester';
         }
         else if (numberOf.distributor < minimumSpawnOf.distributor) {
             var rolename = 'distributor';
@@ -208,6 +214,7 @@ module.exports = {
             var rolename = 'wallRepairer';
         }
         else {
+            // Surplus spawning
             var container = spawn.room.find(FIND_STRUCTURES, {filter: (s) => s.structureType == STRUCTURE_CONTAINER || s.structureType == STRUCTURE_STORAGE});
             var containerEnergie = 0;
 
@@ -246,7 +253,7 @@ module.exports = {
                 name = realspawn.createCustomCreep(energy, rolename, spawn.id);
             }
             if (!(name < 0)) {
-                console.log("Spawned new creep: " + name + " (" + rolename + ") in room " + spawn.room.name + ".");
+                console.log("Spawning creep: " + name + " (" + rolename + ") in room " + spawn.room.name + ".");
             }
             else if (name != -4 && name != -6) {
                 //console.log("Spawn error (" + rolename + " in room " + spawn.room.name + "): " + name);

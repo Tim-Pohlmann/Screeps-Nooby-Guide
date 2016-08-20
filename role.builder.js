@@ -37,7 +37,14 @@ module.exports = {
                 }
                 else {
                     // find closest constructionSite
-                    var arrayStructures=[STRUCTURE_SPAWN,STRUCTURE_EXTENSION,STRUCTURE_ROAD];
+                    var arrayStructures=[
+                        STRUCTURE_SPAWN, 
+                        STRUCTURE_EXTENSION, 
+                        STRUCTURE_CONTAINER, 
+                        STRUCTURE_LINK, 
+                        STRUCTURE_TOWER, 
+                        STRUCTURE_ROAD 
+                    ];
                     var constructionSite=null;
                     for (iStruct=0;iStruct<arrayStructures.length;iStruct++){
                         if(constructionSite==null){

@@ -1,4 +1,5 @@
 const RESOURCE_SPACE = "space";
+const delayPathfinding = 2;
 
 var roleCollector = require('role.collector');
 
@@ -15,7 +16,7 @@ module.exports = {
             creep.memory.working = false;
         }
         // if creep is harvesting energy but is full
-        else if (creep.carry.energy == creep.carryCapacity) {
+        else if (_.sum(creep.carry) == creep.carryCapacity) {
             if (creep.memory.working == false) {
                 delete creep.memory.targetBuffer;
             }
@@ -26,35 +27,27 @@ module.exports = {
         // if creep is supposed to transfer energy to a structure
         if (creep.memory.working == true) {
 			// find closest spawn, extension or tower which is not full
-			var numberOfHarvesters = creep.room.find(FIND_MY_CREEPS, {filter: (s) => (s.memory.role == "harvester")}).length;
-			var numberOfTransporters = creep.room.find(FIND_MY_CREEPS, {filter: (s) => (s.memory.role == "energyTransporter")}).length;
-			var structure;
-
-			if (numberOfTransporters > 0 || numberOfHarvesters < 2 || (creep.room.memory.hostiles > 0 && creep.room.find(FIND_MY_CREEPS, {filter: (s) => (s.memory.role == "protector")}).length == 0)) {
-				//no tower refill;
-                structure = creep.findResource(RESOURCE_SPACE, STRUCTURE_SPAWN, STRUCTURE_EXTENSION);
-			}
-			else {
-				//towers included in energy distribution
-                structure = creep.findResource(RESOURCE_SPACE, STRUCTURE_SPAWN, STRUCTURE_EXTENSION, STRUCTURE_TOWER);
-			}
+            var structure = creep.findResource(RESOURCE_SPACE, STRUCTURE_SPAWN, STRUCTURE_EXTENSION, STRUCTURE_TOWER);
 			// if we found one
+
 			if (structure != undefined && structure != null) {
 				// try to transfer energy, if it is not in range
+
 				if (creep.transfer(structure, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
 					// move towards it
-					creep.moveTo(structure, {reusePath: 3});
+					creep.moveTo(structure, {reusePath: delayPathfinding});
 				}
 			}
 			else {
+				// spawn, extensions and towers full with energy
                 var container = creep.findResource(RESOURCE_SPACE, STRUCTURE_STORAGE);
-				if (container == null || container == undefined) {
+                if (container == null || container == undefined) {
                     container = creep.findResource(RESOURCE_SPACE, STRUCTURE_CONTAINER);
-				}
+                }
 
 				if (creep.transfer(container, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
 					// move towards it
-					creep.moveTo(container, {reusePath: 3});
+					creep.moveTo(container, {reusePath: delayPathfinding});
 				}
 			}
 		}

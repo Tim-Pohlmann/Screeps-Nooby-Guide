@@ -56,7 +56,7 @@ Flag.prototype =
      * @type {function}
      *
      * @param {string} color Primary color of the flag. One of the COLOR_* constants.
-     * @param {string} [secondaryColor] Secondary color of the flag. One of the COLOR_* constants.
+     * @param {string|undefined|null} [secondaryColor] Secondary color of the flag. One of the COLOR_* constants.
      *
      * @return {number|OK|ERR_INVALID_ARGS}
      */
@@ -67,8 +67,8 @@ Flag.prototype =
      *
      * @type {function}
      *
-     * @param {number} x The X position in the room.
-     * @param {number} y The Y position in the room.
+     * @param {number|RoomPosition|RoomObject} x The X position in the room.
+     * @param {number} [y] The Y position in the room.
      *
      * @note Alternative function: setPosition(pos)
      * @param {object} pos Can be a RoomPosition object or any object containing RoomPosition.

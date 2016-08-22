@@ -32,13 +32,15 @@ allies.push("Tanjera");
 allies.push("Atavus");
 allies.push("BlackLotus");
 
-module.exports.loop = function () {
-    /*var stringified = JSON.stringify(Memory);
-    var startCpu = Game.cpu.getUsed();
-    JSON.parse(stringified);
-    console.log('CPU spent on Memory parsing:', Game.cpu.getUsed() - startCpu);*/
+// Any modules that you use that modify the game's prototypes should be require'd
+// before you require the profiler.
+const profiler = require('screeps-profiler');
 
-    if (CPUdebug == true) {console.log("Start: " + Game.cpu.getUsed())}
+// This line monkey patches the global prototypes.
+profiler.enable();
+module.exports.loop = function() {
+  profiler.wrap(function() {
+     if (CPUdebug == true) {console.log("Start: " + Game.cpu.getUsed())}
 
 	// check for memory entries of died creeps by iterating over Memory.creeps
     for (var name in Memory.creeps) {
@@ -69,7 +71,7 @@ module.exports.loop = function () {
         }
 
         //  Refresher (will be executed every few ticks)
-        var searchresult;
+        var searchResult;
 
         if (Game.time % delayRoomScanning == 0) {
             Game.rooms[r].memory.resourceTicker = Game.time;
@@ -326,7 +328,7 @@ module.exports.loop = function () {
         if (CPUdebug == true) {console.log("Start dropped energy search: " + Game.cpu.getUsed())}
         // Search for dropped energy
         var energies=Game.rooms[r].find(FIND_DROPPED_ENERGY);
-        for (energy in energies) {
+        for (var energy in energies) {
             var energyID = energies[energy].id;
             var energyAmount = energies[energy].amount;
 
@@ -514,4 +516,5 @@ module.exports.loop = function () {
         if (CPUdebug == true) {console.log("Creep " + creep.name +"( "+ creep.memory.role + ") finished: " + Game.cpu.getUsed())}
     }
     if (CPUdebug == true) {console.log("Finish: " + Game.cpu.getUsed())}
-};
+  });
+}

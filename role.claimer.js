@@ -63,7 +63,7 @@ module.exports = {
                 switch (returncode) {
                     case ERR_NOT_IN_RANGE:
                         // if not in range, move towards the controller
-                        creep.moveTo(remoteController, {reusePath: 1});
+                        creep.moveTo(creep.room.controller, {reusePath: 5});
                         break;
 
                     case ERR_INVALID_TARGET:
@@ -73,12 +73,16 @@ module.exports = {
                     case ERR_GCL_NOT_ENOUGH:
                         //Global level not high enough, switch to reserving
                         if (creep.reserveController(creep.room.controller) == ERR_NOT_IN_RANGE)
-                            creep.moveTo(remoteController, {reusePath: 1});
+                            creep.moveTo(creep.room.controller, {reusePath: 5});
+                        break;
+
+                    case OK:
+                        remoteController.pos.createConstructionSite(STRUCTURE_SPAWN);
                         break;
 
                     default:
                         creep.say(returncode);
-                        creep.moveTo(remoteController, {reusePath: 1});
+                        creep.moveTo(creep.room.controller, {reusePath: 5});
                         break;
                 }
             }

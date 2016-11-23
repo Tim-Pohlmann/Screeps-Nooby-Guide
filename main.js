@@ -43,7 +43,7 @@ module.exports.loop = function () {
         }
     }
 
-    var towers = Game.rooms.W24S23.find(FIND_STRUCTURES, {
+    var towers = Game.rooms.W2N5.find(FIND_STRUCTURES, {
         filter: (s) => s.structureType == STRUCTURE_TOWER
     });
     for (let tower of towers) {

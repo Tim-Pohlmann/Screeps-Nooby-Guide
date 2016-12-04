@@ -48,4 +48,10 @@ module.exports = function() {
                 working: false
             });
         };
+    
+    // create a new function for StructureSpawn
+    StructureSpawn.prototype.createClaimer =
+        function (target) {
+            return this.createCreep([CLAIM, MOVE], undefined, { role: 'claimer', target: target });
+        }
 };

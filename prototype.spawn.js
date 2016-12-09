@@ -53,5 +53,29 @@ module.exports = function() {
     StructureSpawn.prototype.createClaimer =
         function (target) {
             return this.createCreep([CLAIM, MOVE], undefined, { role: 'claimer', target: target });
-        }
+        };
+
+    // create a new function for StructureSpawn
+    StructureSpawn.prototype.createMiner =
+        function (sourceId) {
+            return this.createCreep([WORK, WORK, WORK, WORK, WORK, MOVE], undefined,
+                                    { role: 'miner', sourceId: sourceId });
+        };
+
+    // create a new function for StructureSpawn
+    StructureSpawn.prototype.createLorry =
+        function (energy) {
+            // create a body with twice as many CARRY as MOVE parts
+            var numberOfParts = Math.floor(energy / 150);
+            var body = [];
+            for (let i = 0; i < numberOfParts * 2; i++) {
+                body.push(CARRY);
+            }
+            for (let i = 0; i < numberOfParts; i++) {
+                body.push(MOVE);
+            }
+
+            // create creep with the created body and the role 'lorry'
+            return this.createCreep(body, undefined, { role: 'lorry', working: false });
+        };
 };

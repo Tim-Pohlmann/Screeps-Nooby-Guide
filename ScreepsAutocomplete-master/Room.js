@@ -38,11 +38,9 @@ Room = {
 Room.prototype =
 {
     /**
-     * The Controller structure of this room, if present, otherwise undefined.
-     *
      * @see {@link http://support.screeps.com/hc/en-us/articles/203079011-Room#controller}
      *
-     * @type {undefined|StructureController}
+     * @property {StructureController|undefined} controller The Controller structure of this room, if present, otherwise undefined.
      */
     controller: null,
 

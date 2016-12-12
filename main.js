@@ -78,8 +78,11 @@ module.exports.loop = function () {
 
     // iterate over all the spawns
     for (let spawnName in Game.spawns) {
+        /** @type {Spawn} */
         let spawn = Game.spawns[spawnName];
         let creepsInRoom = spawn.room.find(FIND_MY_CREEPS);
+        /** @type {Room} */
+        let room = spawn.room;
 
         // count the number of creeps alive for each role in this room
         // _.sum will count the number of properties in Game.creeps filtered by the
@@ -102,11 +105,12 @@ module.exports.loop = function () {
 
         // if no harvesters are left AND either no miners or no lorries are left
         //  create a backup creep
-        if (numberOfHarvesters == 0 && (numberOfMiners == 0 || numberOfLorries == 0)) {
+        if (numberOfHarvesters == 0 && numberOfLorries == 0) {
             // if there are still miners left
-            if (numberOfMiners > 0) {
+            if (numberOfMiners > 0 ||
+                (spawn.room.storage != undefined && spawn.room.storage.store[RESOURCE_ENERGY] >= 150 + 550)) {
                 // create a lorry
-                name = spawn.createLorry(spawn.room.energyAvailable);
+                name = spawn.createLorry(150);
             }
             // if there is no miner left
             else {
@@ -146,7 +150,7 @@ module.exports.loop = function () {
             // if not enough lorries
             else if (numberOfLorries < spawn.memory.minLorries) {
                 // try to spawn one
-                name = spawn.createLorry(300);
+                name = spawn.createLorry(150);
             }
             // if there is a claim order defined
             else if (spawn.memory.claimRoom != undefined) {

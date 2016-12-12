@@ -1,6 +1,7 @@
 module.exports = {
     // a function to run the logic for this role
-    run: function(creep) {
+    /** @param {Creep} creep */
+    run: function (creep) {
         // if creep is bringing energy to a structure but has no energy left
         if (creep.memory.working == true && creep.carry.energy == 0) {
             // switch state
@@ -25,6 +26,10 @@ module.exports = {
                              && s.energy < s.energyCapacity
             });
 
+            if (structure == undefined) {
+                structure = creep.room.storage;
+            }
+
             // if we found one
             if (structure != undefined) {
                 // try to transfer energy, if it is not in range
@@ -40,6 +45,11 @@ module.exports = {
             let container = creep.pos.findClosestByPath(FIND_STRUCTURES, {
                 filter: s => s.structureType == STRUCTURE_CONTAINER && s.store[RESOURCE_ENERGY] > 0
             });
+
+            if (container == undefined) {
+                container = creep.room.storage;
+            }
+
             // if one was found
             if (container != undefined) {
                 // try to withdraw energy, if the container is not in range

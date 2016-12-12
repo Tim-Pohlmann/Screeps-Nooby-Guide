@@ -27,6 +27,10 @@ module.exports = {
                                  && s.energy < s.energyCapacity
                 });
 
+                if (structure == undefined) {
+                    structure = creep.room.storage;
+                }
+
                 // if we found one
                 if (structure != undefined) {
                     // try to transfer energy, if it is not in range

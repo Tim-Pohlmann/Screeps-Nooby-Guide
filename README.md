@@ -15,7 +15,8 @@ Youtube videos:
 - [Part 9](https://www.youtube.com/watch?v=KK7Cnum6DUc): Screeps Nooby Guide #9: Local Private Server - 11:52
 - [Part 10](https://www.youtube.com/watch?v=BiIDH2Ui8L8): Screeps Nooby Guide #10: Long Distance Harvesting - 34:36
 - [Part 11](https://www.youtube.com/watch?v=b_dn8a7xvec): Screeps Nooby Guide #11: Multi-Rooming - 43:15
-- [Part 12](https://www.youtube.com/watch?v=XyRQDmZWPDU): Screeps Nooby Guide #12: Container Mining - 53.21
+- [Part 12](https://www.youtube.com/watch?v=XyRQDmZWPDU): Screeps Nooby Guide #12: Container Mining - 53:21
+- [Part 13](https://www.youtube.com/watch?v=lYzJC7dAGec): Screeps Nooby Guide #13: Storage - 28:22
 
 License
 ----

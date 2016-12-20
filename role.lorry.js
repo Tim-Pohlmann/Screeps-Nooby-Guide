@@ -1,7 +1,7 @@
 module.exports = {
     // a function to run the logic for this role
     /** @param {Creep} creep */
-    run: function (creep) {
+    run: function(creep) {
         // if creep is bringing energy to a structure but has no energy left
         if (creep.memory.working == true && creep.carry.energy == 0) {
             // switch state

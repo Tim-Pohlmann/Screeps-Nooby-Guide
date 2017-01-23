@@ -8,4 +8,12 @@ StructureTower.prototype.defend =
             // ...FIRE!
             this.attack(target);
         }
+        else{
+        	var closestDamagedStructure = this.pos.findClosestByRange(FIND_STRUCTURES, {
+                filter: (structure) => structure.hits < structure.hitsMax
+            });
+            if(closestDamagedStructure) {
+                this.repair(closestDamagedStructure);
+            }
+        }
     };

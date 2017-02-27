@@ -14,8 +14,7 @@ StructureSpawn.prototype.spawnCreepsIfNecessary =
         //  arrow function, which checks for the creep being a specific role
         /** @type {Object.<string, number>} */
         let numberOfCreeps = {};
-        for (let role of listOfRoles) {
-            numberOfCreeps[role] = _.sum(creepsInRoom, (c) => c.memory.role == role);
+        for (let role of listOfRoles) { numberOfCreeps[role] = _.sum(Game.creeps, {filter: (creep) => {return creep.memory.role}});
         }
         let maxEnergy = room.energyCapacityAvailable;
         let name = undefined;
@@ -196,3 +195,4 @@ StructureSpawn.prototype.createLorry =
         // create creep with the created body and the role 'lorry'
         return this.createCreep(body, undefined, { role: 'lorry', working: false });
     };
+

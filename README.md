@@ -1,5 +1,9 @@
 Code used in my [Screeps Nooby Guide video series](https://www.youtube.com/playlist?list=PL0EZQ169YGlor5rzeJEYYPE3tGYT2zGT2). Please check out other branches than master for code that relates to a specific video.
 
+Directions
+----
+Make sure to set up the memory as seen in part 14 at 14.20
+
 Youtube videos:
 ----
 
@@ -16,7 +20,8 @@ Youtube videos:
 - [Part 10](https://www.youtube.com/watch?v=BiIDH2Ui8L8): Screeps Nooby Guide #10: Long Distance Harvesting - 34:36
 - [Part 11](https://www.youtube.com/watch?v=b_dn8a7xvec): Screeps Nooby Guide #11: Multi-Rooming - 43:15
 - [Part 12](https://www.youtube.com/watch?v=XyRQDmZWPDU): Screeps Nooby Guide #12: Container Mining - 53.21
-
+- [Part 13](https://www.youtube.com/watch?v=lYzJC7dAGec&t=4s): Screeps Nooby Guide #13: Storage - 28.39
+- [Part 14](https://www.youtube.com/watch?v=6b-ZZ6bROWI&t=857s) : Screeps Nooby Guide #14: Refactoring - 30.15
 License
 ----
 

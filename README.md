@@ -22,4 +22,4 @@ Youtube videos:
 License
 ----
 
-MIT, for details see [license file](LICENCE).
+MIT, for details see [license file](LICENSE).
